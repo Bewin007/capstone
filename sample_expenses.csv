@@ -1,0 +1,16 @@
+Date,Type,Description,Category,Amount,Merchant,Notes
+2025-10-01,expense,Grocery shopping,Food,125.50,Walmart,Weekly groceries
+2025-10-03,expense,Gas for car,Transportation,45.00,Shell Station,
+2025-10-05,income,Monthly salary,Salary,3500.00,ABC Company,October salary
+2025-10-07,expense,Electric bill,Utilities,89.75,Power Company,Monthly electricity
+2025-10-10,expense,Netflix subscription,Entertainment,15.99,Netflix,Monthly subscription
+2025-10-12,expense,Restaurant dinner,Food,67.80,Olive Garden,Date night
+2025-10-15,expense,Coffee,Food,4.50,Starbucks,Morning coffee
+2025-10-18,expense,Gym membership,Health,50.00,Fitness Plus,Monthly membership
+2025-10-20,expense,Phone bill,Utilities,55.00,AT&T,
+2025-10-22,income,Freelance work,Salary,500.00,Client XYZ,Website development
+2025-10-25,expense,Groceries,Food,89.20,Target,
+2025-10-27,expense,Movie tickets,Entertainment,32.00,AMC Theaters,Weekend movie
+2025-10-28,expense,Gas,Transportation,50.00,Chevron,
+2025-10-29,expense,Online shopping,Shopping,125.00,Amazon,Books and gadgets
+2025-10-30,expense,Lunch,Food,15.75,Chipotle,
