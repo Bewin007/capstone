@@ -340,6 +340,65 @@ const Budgets: React.FC = () => {
             </Form.Group>
 
             <Form.Group className="mb-3">
+              <Form.Check
+                type="checkbox"
+                label="Enable Recurring Budget"
+                checked={formData.isRecurring || false}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  isRecurring: e.target.checked,
+                  recurringConfig: e.target.checked ? {
+                    frequency: 'monthly',
+                    autoRenew: true,
+                  } : undefined,
+                })}
+              />
+              <Form.Text className="text-muted">
+                Automatically create new budget periods
+              </Form.Text>
+            </Form.Group>
+
+            {formData.isRecurring && (
+              <>
+                <Form.Group className="mb-3">
+                  <Form.Label>Recurring Frequency</Form.Label>
+                  <Form.Select
+                    value={formData.recurringConfig?.frequency || 'monthly'}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      recurringConfig: {
+                        frequency: e.target.value as 'weekly' | 'monthly' | 'yearly',
+                        autoRenew: formData.recurringConfig?.autoRenew || false,
+                      },
+                    })}
+                  >
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                  </Form.Select>
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Check
+                    type="checkbox"
+                    label="Auto-renew budget"
+                    checked={formData.recurringConfig?.autoRenew || false}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      recurringConfig: {
+                        frequency: formData.recurringConfig?.frequency || 'monthly',
+                        autoRenew: e.target.checked,
+                      },
+                    })}
+                  />
+                  <Form.Text className="text-muted">
+                    Automatically renew when period ends
+                  </Form.Text>
+                </Form.Group>
+              </>
+            )}
+
+            <Form.Group className="mb-3">
               <Form.Label>Notes (Optional)</Form.Label>
               <Form.Control
                 as="textarea"

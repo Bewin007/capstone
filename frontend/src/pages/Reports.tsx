@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Form, Alert, Table, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Card, Form, Alert, Table, Badge, Pagination } from 'react-bootstrap';
 import {
   LineChart,
   Line,
@@ -16,7 +16,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format, startOfMonth, endOfMonth, startOfYear, subMonths } from 'date-fns';
-import { analyticsService } from '../services/analyticsService';
+import { analyticsService, TransactionData } from '../services/analyticsService';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF6B9D'];
 
@@ -41,9 +41,20 @@ const Reports: React.FC = () => {
   const [monthlyComparison, setMonthlyComparison] = useState<any[]>([]);
   const [topMerchants, setTopMerchants] = useState<any[]>([]);
 
+  // Transactions pagination states
+  const [transactions, setTransactions] = useState<TransactionData[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalTransactions, setTotalTransactions] = useState(0);
+  const transactionsPerPage = 10;
+
   useEffect(() => {
     loadAllData();
   }, [dateRange, trendPeriod, comparisonMonths]);
+
+  useEffect(() => {
+    loadTransactions();
+  }, [dateRange, currentPage]);
 
   const loadAllData = async () => {
     try {
@@ -81,6 +92,22 @@ const Reports: React.FC = () => {
       setError(err.response?.data?.message || err.message || 'Failed to load analytics data. Please try again later.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadTransactions = async () => {
+    try {
+      const result = await analyticsService.getTransactions(
+        currentPage,
+        transactionsPerPage,
+        dateRange.startDate,
+        dateRange.endDate
+      );
+      setTransactions(result.data);
+      setTotalPages(result.pagination.pages);
+      setTotalTransactions(result.pagination.total);
+    } catch (err: any) {
+      console.error('Error loading transactions:', err);
     }
   };
 
@@ -416,6 +443,99 @@ const Reports: React.FC = () => {
               ) : (
                 <div className="text-center text-muted py-5">
                   <p>No merchant data available for the selected period.</p>
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Transactions List */}
+      <Row className="mb-4">
+        <Col md={12}>
+          <Card>
+            <Card.Header className="d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">All Transactions</h5>
+              <Badge bg="secondary">{totalTransactions} total</Badge>
+            </Card.Header>
+            <Card.Body className="p-0">
+              {transactions && transactions.length > 0 ? (
+                <>
+                  <Table hover responsive className="mb-0">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th className="text-end">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transactions.map((transaction) => (
+                        <tr key={transaction._id}>
+                          <td>{format(new Date(transaction.date), 'MMM dd, yyyy')}</td>
+                          <td>
+                            <div>{transaction.description}</div>
+                            {transaction.merchant && (
+                              <small className="text-muted">{transaction.merchant}</small>
+                            )}
+                          </td>
+                          <td>
+                            {transaction.category.icon} {transaction.category.name}
+                          </td>
+                          <td>
+                            <Badge bg={transaction.type === 'income' ? 'success' : 'danger'}>
+                              {transaction.type}
+                            </Badge>
+                          </td>
+                          <td className={`text-end fw-bold ${transaction.type === 'income' ? 'text-success' : 'text-danger'}`}>
+                            {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="d-flex justify-content-center p-3">
+                      <Pagination>
+                        <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
+                        <Pagination.Prev onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} />
+
+                        {[...Array(totalPages)].map((_, index) => {
+                          const page = index + 1;
+                          // Show first, last, current, and pages around current
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <Pagination.Item
+                                key={page}
+                                active={page === currentPage}
+                                onClick={() => setCurrentPage(page)}
+                              >
+                                {page}
+                              </Pagination.Item>
+                            );
+                          } else if (page === currentPage - 2 || page === currentPage + 2) {
+                            return <Pagination.Ellipsis key={page} disabled />;
+                          }
+                          return null;
+                        })}
+
+                        <Pagination.Next onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} />
+                        <Pagination.Last onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} />
+                      </Pagination>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center text-muted py-5">
+                  <p>No transactions found for the selected period.</p>
                 </div>
               )}
             </Card.Body>

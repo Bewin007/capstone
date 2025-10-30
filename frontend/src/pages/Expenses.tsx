@@ -12,6 +12,7 @@ import {
   Alert,
   ButtonGroup,
   Dropdown,
+  Pagination,
 } from 'react-bootstrap';
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import { expenseService } from '../services/expenseService';
@@ -31,6 +32,12 @@ const Expenses: React.FC = () => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalExpenses, setTotalExpenses] = useState(0);
+  const expensesPerPage = 20;
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -62,7 +69,7 @@ const Expenses: React.FC = () => {
 
   useEffect(() => {
     loadExpenses();
-  }, [filters]);
+  }, [filters, currentPage]);
 
   const loadCategories = async () => {
     try {
@@ -76,7 +83,10 @@ const Expenses: React.FC = () => {
   const loadExpenses = async () => {
     try {
       setLoading(true);
-      const params: any = {};
+      const params: any = {
+        page: currentPage,
+        limit: expensesPerPage,
+      };
       if (filters.type) params.type = filters.type;
       if (filters.category) params.category = filters.category;
       if (filters.startDate) params.startDate = filters.startDate;
@@ -84,6 +94,8 @@ const Expenses: React.FC = () => {
 
       const expensesData = await expenseService.getExpenses(params);
       setExpenses(expensesData.data);
+      setTotalPages(expensesData.pages || 1);
+      setTotalExpenses(expensesData.total || 0);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load expenses');
     } finally {
@@ -117,6 +129,7 @@ const Expenses: React.FC = () => {
     }
 
     setFilters({ ...filters, startDate: start, endDate: end });
+    setCurrentPage(1); // Reset to first page when changing date range
   };
 
   const handleExport = async () => {
@@ -395,6 +408,44 @@ const Expenses: React.FC = () => {
               )}
             </tbody>
           </Table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="d-flex justify-content-between align-items-center p-3 border-top">
+              <div className="text-muted small">
+                Showing {((currentPage - 1) * expensesPerPage) + 1} to {Math.min(currentPage * expensesPerPage, totalExpenses)} of {totalExpenses} transactions
+              </div>
+              <Pagination className="mb-0">
+                <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
+                <Pagination.Prev onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} />
+
+                {[...Array(totalPages)].map((_, index) => {
+                  const page = index + 1;
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <Pagination.Item
+                        key={page}
+                        active={page === currentPage}
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </Pagination.Item>
+                    );
+                  } else if (page === currentPage - 2 || page === currentPage + 2) {
+                    return <Pagination.Ellipsis key={page} disabled />;
+                  }
+                  return null;
+                })}
+
+                <Pagination.Next onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} />
+                <Pagination.Last onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} />
+              </Pagination>
+            </div>
+          )}
         </Card.Body>
       </Card>
 

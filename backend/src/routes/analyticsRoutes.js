@@ -6,6 +6,7 @@ const {
   getIncomeExpenseComparison,
   getMonthlyComparison,
   getTopMerchants,
+  getTransactions,
 } = require('../controllers/analyticsController');
 const { protect } = require('../middleware/auth');
 
@@ -20,5 +21,6 @@ router.get('/categories', getCategoryBreakdown);
 router.get('/comparison', getIncomeExpenseComparison);
 router.get('/monthly-comparison', getMonthlyComparison);
 router.get('/top-merchants', getTopMerchants);
+router.get('/transactions', getTransactions);
 
 module.exports = router;

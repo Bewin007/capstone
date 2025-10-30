@@ -329,4 +329,47 @@ exports.getTopMerchants = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get paginated transactions for date range
+// @route   GET /api/analytics/transactions
+// @access  Private
+exports.getTransactions = asyncHandler(async (req, res) => {
+  const { startDate, endDate, type, category, page = 1, limit = 10 } = req.query;
+
+  const filter = { userId: new mongoose.Types.ObjectId(req.user.id) };
+
+  if (type) filter.type = type;
+  if (category) filter.category = new mongoose.Types.ObjectId(category);
+
+  if (startDate || endDate) {
+    filter.date = {};
+    if (startDate) filter.date.$gte = new Date(startDate);
+    if (endDate) filter.date.$lte = new Date(endDate);
+  }
+
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+  const skip = (pageNum - 1) * limitNum;
+
+  // Get total count for pagination
+  const total = await Expense.countDocuments(filter);
+
+  // Get paginated transactions
+  const transactions = await Expense.find(filter)
+    .populate('category', 'name icon color')
+    .sort({ date: -1, createdAt: -1 })
+    .skip(skip)
+    .limit(limitNum);
+
+  res.status(200).json({
+    success: true,
+    data: transactions,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      total,
+      pages: Math.ceil(total / limitNum),
+    },
+  });
+});
+
 module.exports = exports;

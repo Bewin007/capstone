@@ -68,6 +68,34 @@ export interface TopMerchantData {
   count: number;
 }
 
+export interface TransactionData {
+  _id: string;
+  userId: string;
+  type: 'income' | 'expense';
+  amount: number;
+  description: string;
+  category: {
+    _id: string;
+    name: string;
+    icon: string;
+    color: string;
+  };
+  date: string;
+  merchant?: string;
+  notes?: string;
+  source: string;
+}
+
+export interface PaginatedTransactions {
+  data: TransactionData[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
 export const analyticsService = {
   getOverview: async (startDate?: string, endDate?: string): Promise<OverviewData> => {
     try {
@@ -152,6 +180,32 @@ export const analyticsService = {
       return response.data.data;
     } catch (error: any) {
       console.error('Error fetching top merchants:', error);
+      throw error;
+    }
+  },
+
+  getTransactions: async (
+    page: number,
+    limit: number,
+    startDate?: string,
+    endDate?: string,
+    type?: string,
+    category?: string
+  ): Promise<PaginatedTransactions> => {
+    try {
+      const params: any = { page, limit };
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+      if (type) params.type = type;
+      if (category) params.category = category;
+      const response = await api.get<any>('/analytics/transactions', { params });
+      // Backend returns { success, data: transactions[], pagination }
+      return {
+        data: response.data.data,
+        pagination: response.data.pagination,
+      };
+    } catch (error: any) {
+      console.error('Error fetching transactions:', error);
       throw error;
     }
   },
