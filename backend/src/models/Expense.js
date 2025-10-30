@@ -34,7 +34,7 @@ const expenseSchema = new mongoose.Schema({
   },
   source: {
     type: String,
-    enum: ['manual', 'imported', 'recurring'],
+    enum: ['manual', 'imported', 'recurring', 'goal_contribution'],
     default: 'manual',
   },
   merchant: {

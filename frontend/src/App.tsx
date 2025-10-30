@@ -11,6 +11,7 @@ import Budgets from './pages/Budgets';
 import Goals from './pages/Goals';
 import Categories from './pages/Categories';
 import Profile from './pages/Profile';
+import Reports from './pages/Reports';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const App: React.FC = () => {
@@ -37,6 +38,7 @@ const App: React.FC = () => {
             <Route path="budgets" element={<Budgets />} />
             <Route path="goals" element={<Goals />} />
             <Route path="categories" element={<Categories />} />
+            <Route path="reports" element={<Reports />} />
             <Route path="profile" element={<Profile />} />
           </Route>
 

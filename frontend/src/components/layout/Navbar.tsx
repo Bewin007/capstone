@@ -26,6 +26,7 @@ const Navbar: React.FC = () => {
             <Nav.Link as={Link} to="/expenses">Expenses</Nav.Link>
             <Nav.Link as={Link} to="/budgets">Budgets</Nav.Link>
             <Nav.Link as={Link} to="/goals">Goals</Nav.Link>
+            <Nav.Link as={Link} to="/reports">Reports</Nav.Link>
             <Nav.Link as={Link} to="/categories">Categories</Nav.Link>
           </Nav>
           <Nav className="align-items-center">

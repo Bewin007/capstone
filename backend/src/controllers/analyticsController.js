@@ -2,6 +2,7 @@ const Expense = require('../models/Expense');
 const Budget = require('../models/Budget');
 const Goal = require('../models/Goal');
 const { CustomError, asyncHandler } = require('../middleware/errorHandler');
+const mongoose = require('mongoose');
 
 // @desc    Get dashboard overview
 // @route   GET /api/analytics/overview
@@ -72,7 +73,7 @@ exports.getOverview = asyncHandler(async (req, res) => {
 exports.getSpendingTrends = asyncHandler(async (req, res) => {
   const { period, startDate, endDate } = req.query;
 
-  const filter = { userId: req.user.id };
+  const filter = { userId: new mongoose.Types.ObjectId(req.user.id) };
   if (startDate || endDate) {
     filter.date = {};
     if (startDate) filter.date.$gte = new Date(startDate);
@@ -134,7 +135,7 @@ exports.getSpendingTrends = asyncHandler(async (req, res) => {
 exports.getCategoryBreakdown = asyncHandler(async (req, res) => {
   const { type, startDate, endDate } = req.query;
 
-  const filter = { userId: req.user.id };
+  const filter = { userId: new mongoose.Types.ObjectId(req.user.id) };
   if (type) filter.type = type;
   if (startDate || endDate) {
     filter.date = {};
@@ -177,7 +178,7 @@ exports.getCategoryBreakdown = asyncHandler(async (req, res) => {
   const totalAmount = breakdown.reduce((sum, item) => sum + item.total, 0);
   const breakdownWithPercentage = breakdown.map(item => ({
     ...item,
-    percentage: ((item.total / totalAmount) * 100).toFixed(2),
+    percentage: totalAmount > 0 ? ((item.total / totalAmount) * 100).toFixed(2) : '0.00',
   }));
 
   res.status(200).json({
@@ -192,7 +193,7 @@ exports.getCategoryBreakdown = asyncHandler(async (req, res) => {
 exports.getIncomeExpenseComparison = asyncHandler(async (req, res) => {
   const { startDate, endDate } = req.query;
 
-  const filter = { userId: req.user.id };
+  const filter = { userId: new mongoose.Types.ObjectId(req.user.id) };
   if (startDate || endDate) {
     filter.date = {};
     if (startDate) filter.date.$gte = new Date(startDate);
@@ -248,7 +249,7 @@ exports.getMonthlyComparison = asyncHandler(async (req, res) => {
   const monthlyData = await Expense.aggregate([
     {
       $match: {
-        userId: req.user.id,
+        userId: new mongoose.Types.ObjectId(req.user.id),
         date: { $gte: startDate },
       },
     },
@@ -294,7 +295,7 @@ exports.getTopMerchants = asyncHandler(async (req, res) => {
   const topLimit = parseInt(limit) || 10;
 
   const filter = {
-    userId: req.user.id,
+    userId: new mongoose.Types.ObjectId(req.user.id),
     type: 'expense',
     merchant: { $exists: true, $ne: null, $ne: '' },
   };

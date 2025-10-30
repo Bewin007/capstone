@@ -16,6 +16,7 @@ const goalRoutes = require('./routes/goalRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const exportRoutes = require('./routes/exportRoutes');
 const importRoutes = require('./routes/importRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 // Initialize express app
 const app = express();
@@ -54,6 +55,7 @@ app.use('/api/goals', goalRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/import', importRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

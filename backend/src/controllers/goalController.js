@@ -205,12 +205,29 @@ exports.addContribution = asyncHandler(async (req, res) => {
 
   // Create an expense transaction to track the money going toward the goal
   if (createExpense !== false) {
+    // If goal doesn't have a linked category, find a default "Savings" or "Miscellaneous" category
+    let categoryId = goal.linkedCategory;
+
+    if (!categoryId) {
+      const Category = require('../models/Category');
+      const defaultCategory = await Category.findOne({
+        owner: 'system',
+        name: { $in: ['Savings', 'Miscellaneous', 'Other'] }
+      });
+
+      if (defaultCategory) {
+        categoryId = defaultCategory._id;
+      } else {
+        throw new CustomError('Cannot create expense: No category available. Please link a category to this goal.', 400);
+      }
+    }
+
     const expense = await Expense.create({
       userId: req.user.id,
       type: 'expense',
       amount,
       description: `Contribution to goal: ${goal.name}`,
-      category: goal.linkedCategory || null,
+      category: categoryId,
       date: new Date(),
       notes: note?.trim(),
       source: 'goal_contribution',

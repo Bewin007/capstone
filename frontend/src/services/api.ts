@@ -40,11 +40,11 @@ class ApiService {
   }
 
   // Helper method to get API instance
-  getApi() {
+  getApi(): AxiosInstance {
     return this.api;
   }
 }
 
 const apiService = new ApiService();
-export const api = apiService.getApi();
+export const api: AxiosInstance = apiService.getApi();
 export default apiService;

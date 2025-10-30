@@ -33,6 +33,9 @@ const systemCategories = [
   { name: 'Business', icon: '🏢', color: '#1E8449', type: 'income', owner: 'system' },
   { name: 'Bonus', icon: '🎉', color: '#28B463', type: 'income', owner: 'system' },
   { name: 'Other Income', icon: '💵', color: '#52BE80', type: 'income', owner: 'system' },
+
+  // Both (for goal contributions and savings)
+  { name: 'Savings', icon: '🏦', color: '#3498DB', type: 'both', owner: 'system' },
 ];
 
 async function seed() {
@@ -77,101 +80,270 @@ async function seed() {
     const salaryCategory = categories.find(c => c.name === 'Salary');
     const freelanceCategory = categories.find(c => c.name === 'Freelance');
 
-    // Create sample expenses
-    console.log('Creating sample expenses...');
+    // Get all categories for easier access
+    const billsCategory = categories.find(c => c.name === 'Bills & Utilities');
+    const healthcareCategory = categories.find(c => c.name === 'Healthcare');
+    const subscriptionsCategory = categories.find(c => c.name === 'Subscriptions');
+    const housingCategory = categories.find(c => c.name === 'Housing');
+    const travelCategory = categories.find(c => c.name === 'Travel');
+    const bonusCategory = categories.find(c => c.name === 'Bonus');
+
+    // Create sample expenses for the last 12 months
+    console.log('Creating sample expenses for the last 12 months...');
     const now = new Date();
     const expenses = [];
 
-    // Income
-    expenses.push({
-      userId: demoUser._id,
-      type: 'income',
-      amount: 5000,
-      description: 'Monthly Salary',
-      category: salaryCategory._id,
-      date: new Date(now.getFullYear(), now.getMonth(), 1),
-      source: 'manual',
-    });
+    // Generate data for each of the last 12 months
+    for (let monthOffset = 11; monthOffset >= 0; monthOffset--) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1);
+      const year = monthDate.getFullYear();
+      const month = monthDate.getMonth();
 
-    expenses.push({
-      userId: demoUser._id,
-      type: 'income',
-      amount: 1500,
-      description: 'Freelance Project',
-      category: freelanceCategory._id,
-      date: new Date(now.getFullYear(), now.getMonth(), 15),
-      source: 'manual',
-    });
+      // Monthly Salary (always on the 1st)
+      expenses.push({
+        userId: demoUser._id,
+        type: 'income',
+        amount: 5000 + Math.random() * 500, // 5000-5500
+        description: 'Monthly Salary',
+        category: salaryCategory._id,
+        date: new Date(year, month, 1),
+        source: 'manual',
+        merchant: 'ABC Company',
+      });
 
-    // Expenses
-    expenses.push({
-      userId: demoUser._id,
-      type: 'expense',
-      amount: 45.99,
-      description: 'Grocery Shopping',
-      category: foodCategory._id,
-      date: new Date(now.getFullYear(), now.getMonth(), 5),
-      merchant: 'Whole Foods',
-      source: 'manual',
-    });
+      // Occasional freelance income (50% chance each month)
+      if (Math.random() > 0.5) {
+        expenses.push({
+          userId: demoUser._id,
+          type: 'income',
+          amount: 800 + Math.random() * 1200, // 800-2000
+          description: 'Freelance Project',
+          category: freelanceCategory._id,
+          date: new Date(year, month, 10 + Math.floor(Math.random() * 10)),
+          source: 'manual',
+          merchant: 'Client ' + (Math.floor(Math.random() * 5) + 1),
+        });
+      }
 
-    expenses.push({
-      userId: demoUser._id,
-      type: 'expense',
-      amount: 25.50,
-      description: 'Lunch at Restaurant',
-      category: foodCategory._id,
-      date: new Date(now.getFullYear(), now.getMonth(), 10),
-      merchant: 'Local Restaurant',
-      source: 'manual',
-    });
+      // Bonus (only in certain months)
+      if (monthOffset === 11 || monthOffset === 5 || monthOffset === 0) {
+        expenses.push({
+          userId: demoUser._id,
+          type: 'income',
+          amount: 1000 + Math.random() * 2000, // 1000-3000
+          description: 'Performance Bonus',
+          category: bonusCategory._id,
+          date: new Date(year, month, 25),
+          source: 'manual',
+        });
+      }
 
-    expenses.push({
-      userId: demoUser._id,
-      type: 'expense',
-      amount: 60.00,
-      description: 'Gas Station',
-      category: transportCategory._id,
-      date: new Date(now.getFullYear(), now.getMonth(), 7),
-      merchant: 'Shell',
-      source: 'manual',
-    });
+      // EXPENSES - Recurring monthly expenses
 
-    expenses.push({
-      userId: demoUser._id,
-      type: 'expense',
-      amount: 129.99,
-      description: 'New Shoes',
-      category: shoppingCategory._id,
-      date: new Date(now.getFullYear(), now.getMonth(), 12),
-      merchant: 'Nike Store',
-      source: 'manual',
-    });
+      // Rent/Housing (1st of month)
+      expenses.push({
+        userId: demoUser._id,
+        type: 'expense',
+        amount: 1200,
+        description: 'Monthly Rent',
+        category: housingCategory._id,
+        date: new Date(year, month, 1),
+        merchant: 'Apartment Complex',
+        source: 'manual',
+      });
 
-    expenses.push({
-      userId: demoUser._id,
-      type: 'expense',
-      amount: 15.99,
-      description: 'Netflix Subscription',
-      category: entertainmentCategory._id,
-      date: new Date(now.getFullYear(), now.getMonth(), 1),
-      merchant: 'Netflix',
-      source: 'manual',
-      isRecurring: true,
-      recurringConfig: {
-        frequency: 'monthly',
-        interval: 1,
-        startDate: new Date(now.getFullYear(), now.getMonth(), 1),
-      },
-    });
+      // Utilities (5th of month)
+      expenses.push({
+        userId: demoUser._id,
+        type: 'expense',
+        amount: 80 + Math.random() * 40, // 80-120
+        description: 'Electric Bill',
+        category: billsCategory._id,
+        date: new Date(year, month, 5),
+        merchant: 'Power Company',
+        source: 'manual',
+      });
+
+      // Internet (10th)
+      expenses.push({
+        userId: demoUser._id,
+        type: 'expense',
+        amount: 60,
+        description: 'Internet Service',
+        category: billsCategory._id,
+        date: new Date(year, month, 10),
+        merchant: 'ISP Provider',
+        source: 'manual',
+      });
+
+      // Phone bill (15th)
+      expenses.push({
+        userId: demoUser._id,
+        type: 'expense',
+        amount: 55,
+        description: 'Mobile Phone Bill',
+        category: billsCategory._id,
+        date: new Date(year, month, 15),
+        merchant: 'AT&T',
+        source: 'manual',
+      });
+
+      // Netflix subscription
+      expenses.push({
+        userId: demoUser._id,
+        type: 'expense',
+        amount: 15.99,
+        description: 'Netflix Subscription',
+        category: subscriptionsCategory._id,
+        date: new Date(year, month, 1),
+        merchant: 'Netflix',
+        source: 'manual',
+      });
+
+      // Spotify subscription
+      expenses.push({
+        userId: demoUser._id,
+        type: 'expense',
+        amount: 9.99,
+        description: 'Spotify Premium',
+        category: subscriptionsCategory._id,
+        date: new Date(year, month, 1),
+        merchant: 'Spotify',
+        source: 'manual',
+      });
+
+      // Gym membership
+      expenses.push({
+        userId: demoUser._id,
+        type: 'expense',
+        amount: 50,
+        description: 'Gym Membership',
+        category: healthcareCategory._id,
+        date: new Date(year, month, 1),
+        merchant: 'Fitness Plus',
+        source: 'manual',
+      });
+
+      // Variable expenses - Food & Dining (3-5 times per month)
+      const foodCount = 3 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < foodCount; i++) {
+        expenses.push({
+          userId: demoUser._id,
+          type: 'expense',
+          amount: 20 + Math.random() * 80, // 20-100
+          description: ['Grocery Shopping', 'Restaurant Dinner', 'Lunch Out', 'Coffee', 'Fast Food'][Math.floor(Math.random() * 5)],
+          category: foodCategory._id,
+          date: new Date(year, month, 5 + Math.floor(Math.random() * 20)),
+          merchant: ['Whole Foods', 'Walmart', 'Target', 'Starbucks', 'Chipotle', 'Olive Garden'][Math.floor(Math.random() * 6)],
+          source: 'manual',
+        });
+      }
+
+      // Transportation (2-4 times per month)
+      const transportCount = 2 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < transportCount; i++) {
+        expenses.push({
+          userId: demoUser._id,
+          type: 'expense',
+          amount: 40 + Math.random() * 30, // 40-70
+          description: 'Gas',
+          category: transportCategory._id,
+          date: new Date(year, month, 3 + i * 7),
+          merchant: ['Shell', 'Chevron', 'BP', 'Exxon'][Math.floor(Math.random() * 4)],
+          source: 'manual',
+        });
+      }
+
+      // Shopping (1-3 times per month)
+      const shoppingCount = 1 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < shoppingCount; i++) {
+        expenses.push({
+          userId: demoUser._id,
+          type: 'expense',
+          amount: 30 + Math.random() * 170, // 30-200
+          description: ['Clothing', 'Electronics', 'Home Goods', 'Online Shopping'][Math.floor(Math.random() * 4)],
+          category: shoppingCategory._id,
+          date: new Date(year, month, 8 + Math.floor(Math.random() * 15)),
+          merchant: ['Amazon', 'Target', 'Best Buy', 'Nike Store', 'H&M'][Math.floor(Math.random() * 5)],
+          source: 'manual',
+        });
+      }
+
+      // Entertainment (1-2 times per month)
+      const entertainmentCount = 1 + Math.floor(Math.random() * 2);
+      for (let i = 0; i < entertainmentCount; i++) {
+        expenses.push({
+          userId: demoUser._id,
+          type: 'expense',
+          amount: 15 + Math.random() * 85, // 15-100
+          description: ['Movie Tickets', 'Concert', 'Video Games', 'Sports Event'][Math.floor(Math.random() * 4)],
+          category: entertainmentCategory._id,
+          date: new Date(year, month, 10 + Math.floor(Math.random() * 15)),
+          merchant: ['AMC Theaters', 'Steam', 'Ticketmaster', 'Live Nation'][Math.floor(Math.random() * 4)],
+          source: 'manual',
+        });
+      }
+
+      // Healthcare (occasional)
+      if (Math.random() > 0.7) {
+        expenses.push({
+          userId: demoUser._id,
+          type: 'expense',
+          amount: 50 + Math.random() * 150, // 50-200
+          description: ['Doctor Visit', 'Pharmacy', 'Dental Checkup'][Math.floor(Math.random() * 3)],
+          category: healthcareCategory._id,
+          date: new Date(year, month, 15 + Math.floor(Math.random() * 10)),
+          merchant: ['CVS Pharmacy', 'Walgreens', 'Medical Center'][Math.floor(Math.random() * 3)],
+          source: 'manual',
+        });
+      }
+
+      // Travel (occasional - 20% chance)
+      if (Math.random() > 0.8) {
+        expenses.push({
+          userId: demoUser._id,
+          type: 'expense',
+          amount: 300 + Math.random() * 700, // 300-1000
+          description: ['Weekend Trip', 'Flight Tickets', 'Hotel Booking'][Math.floor(Math.random() * 3)],
+          category: travelCategory._id,
+          date: new Date(year, month, 10 + Math.floor(Math.random() * 15)),
+          merchant: ['Expedia', 'Hotels.com', 'Airbnb', 'United Airlines'][Math.floor(Math.random() * 4)],
+          source: 'manual',
+        });
+      }
+    }
 
     await Expense.insertMany(expenses);
-    console.log(`✓ Created ${expenses.length} sample expenses`);
+    console.log(`✓ Created ${expenses.length} sample expenses across 12 months`);
 
     // Create sample budgets
     console.log('Creating sample budgets...');
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    // Calculate actual spent amounts for current month
+    const currentMonthExpenses = expenses.filter(e => {
+      const expenseDate = new Date(e.date);
+      return expenseDate.getMonth() === now.getMonth() &&
+             expenseDate.getFullYear() === now.getFullYear() &&
+             e.type === 'expense';
+    });
+
+    const foodSpent = currentMonthExpenses
+      .filter(e => e.category.toString() === foodCategory._id.toString())
+      .reduce((sum, e) => sum + e.amount, 0);
+
+    const transportSpent = currentMonthExpenses
+      .filter(e => e.category.toString() === transportCategory._id.toString())
+      .reduce((sum, e) => sum + e.amount, 0);
+
+    const shoppingSpent = currentMonthExpenses
+      .filter(e => e.category.toString() === shoppingCategory._id.toString())
+      .reduce((sum, e) => sum + e.amount, 0);
+
+    const entertainmentSpent = currentMonthExpenses
+      .filter(e => e.category.toString() === entertainmentCategory._id.toString())
+      .reduce((sum, e) => sum + e.amount, 0);
 
     const budgets = [
       {
@@ -179,7 +351,7 @@ async function seed() {
         name: 'Monthly Food Budget',
         category: foodCategory._id,
         targetAmount: 500,
-        spentAmount: 71.49,
+        spentAmount: foodSpent,
         period: 'monthly',
         startDate: startOfMonth,
         endDate: endOfMonth,
@@ -194,8 +366,8 @@ async function seed() {
         userId: demoUser._id,
         name: 'Transportation Budget',
         category: transportCategory._id,
-        targetAmount: 200,
-        spentAmount: 60,
+        targetAmount: 300,
+        spentAmount: transportSpent,
         period: 'monthly',
         startDate: startOfMonth,
         endDate: endOfMonth,
@@ -210,11 +382,27 @@ async function seed() {
         userId: demoUser._id,
         name: 'Shopping Budget',
         category: shoppingCategory._id,
-        targetAmount: 300,
-        spentAmount: 129.99,
+        targetAmount: 400,
+        spentAmount: shoppingSpent,
         period: 'monthly',
         startDate: startOfMonth,
         endDate: endOfMonth,
+        alertThreshold: 75,
+      },
+      {
+        userId: demoUser._id,
+        name: 'Entertainment Budget',
+        category: entertainmentCategory._id,
+        targetAmount: 200,
+        spentAmount: entertainmentSpent,
+        period: 'monthly',
+        startDate: startOfMonth,
+        endDate: endOfMonth,
+        isRecurring: true,
+        recurringConfig: {
+          frequency: 'monthly',
+          autoRenew: true,
+        },
         alertThreshold: 75,
       },
     ];
