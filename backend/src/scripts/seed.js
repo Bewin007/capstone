@@ -316,99 +316,185 @@ async function seed() {
     await Expense.insertMany(expenses);
     console.log(`✓ Created ${expenses.length} sample expenses across 12 months`);
 
-    // Create sample budgets
-    console.log('Creating sample budgets...');
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    // Create sample budgets for the last 6 months
+    console.log('Creating sample budgets for last 6 months...');
+    const budgets = [];
 
-    // Calculate actual spent amounts for current month
-    const currentMonthExpenses = expenses.filter(e => {
-      const expenseDate = new Date(e.date);
-      return expenseDate.getMonth() === now.getMonth() &&
-             expenseDate.getFullYear() === now.getFullYear() &&
-             e.type === 'expense';
-    });
+    // Helper function to calculate spent amount for a month and category
+    const calculateSpent = (year, month, categoryId) => {
+      return expenses
+        .filter(e => {
+          const expenseDate = new Date(e.date);
+          return expenseDate.getMonth() === month &&
+                 expenseDate.getFullYear() === year &&
+                 e.type === 'expense' &&
+                 e.category.toString() === categoryId.toString();
+        })
+        .reduce((sum, e) => sum + e.amount, 0);
+    };
 
-    const foodSpent = currentMonthExpenses
-      .filter(e => e.category.toString() === foodCategory._id.toString())
-      .reduce((sum, e) => sum + e.amount, 0);
+    // Create budgets for the last 6 months
+    for (let monthOffset = 5; monthOffset >= 0; monthOffset--) {
+      const budgetDate = new Date(now.getFullYear(), now.getMonth() - monthOffset, 1);
+      const year = budgetDate.getFullYear();
+      const month = budgetDate.getMonth();
+      const startDate = new Date(year, month, 1);
+      const endDate = new Date(year, month + 1, 0);
 
-    const transportSpent = currentMonthExpenses
-      .filter(e => e.category.toString() === transportCategory._id.toString())
-      .reduce((sum, e) => sum + e.amount, 0);
+      const monthName = budgetDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
-    const shoppingSpent = currentMonthExpenses
-      .filter(e => e.category.toString() === shoppingCategory._id.toString())
-      .reduce((sum, e) => sum + e.amount, 0);
+      // Calculate spent amounts for this month
+      const foodSpent = calculateSpent(year, month, foodCategory._id);
+      const transportSpent = calculateSpent(year, month, transportCategory._id);
+      const shoppingSpent = calculateSpent(year, month, shoppingCategory._id);
+      const entertainmentSpent = calculateSpent(year, month, entertainmentCategory._id);
+      const housingSpent = calculateSpent(year, month, housingCategory._id);
+      const billsSpent = calculateSpent(year, month, billsCategory._id);
 
-    const entertainmentSpent = currentMonthExpenses
-      .filter(e => e.category.toString() === entertainmentCategory._id.toString())
-      .reduce((sum, e) => sum + e.amount, 0);
+      // Mark old budgets as completed
+      const status = monthOffset === 0 ? 'active' : 'completed';
 
-    const budgets = [
-      {
+      // Food Budget (recurring)
+      budgets.push({
         userId: demoUser._id,
         name: 'Monthly Food Budget',
         category: foodCategory._id,
         targetAmount: 500,
         spentAmount: foodSpent,
         period: 'monthly',
-        startDate: startOfMonth,
-        endDate: endOfMonth,
+        startDate,
+        endDate,
+        status,
         isRecurring: true,
         recurringConfig: {
           frequency: 'monthly',
           autoRenew: true,
         },
         alertThreshold: 80,
-      },
-      {
+      });
+
+      // Transportation Budget (recurring)
+      budgets.push({
         userId: demoUser._id,
         name: 'Transportation Budget',
         category: transportCategory._id,
         targetAmount: 300,
         spentAmount: transportSpent,
         period: 'monthly',
-        startDate: startOfMonth,
-        endDate: endOfMonth,
+        startDate,
+        endDate,
+        status,
         isRecurring: true,
         recurringConfig: {
           frequency: 'monthly',
           autoRenew: true,
         },
         alertThreshold: 80,
-      },
-      {
+      });
+
+      // Shopping Budget (only for current month and last 2 months)
+      if (monthOffset <= 2) {
+        budgets.push({
+          userId: demoUser._id,
+          name: 'Shopping Budget',
+          category: shoppingCategory._id,
+          targetAmount: 400,
+          spentAmount: shoppingSpent,
+          period: 'monthly',
+          startDate,
+          endDate,
+          status,
+          alertThreshold: 75,
+        });
+      }
+
+      // Entertainment Budget (recurring, only last 4 months)
+      if (monthOffset <= 3) {
+        budgets.push({
+          userId: demoUser._id,
+          name: 'Entertainment Budget',
+          category: entertainmentCategory._id,
+          targetAmount: 200,
+          spentAmount: entertainmentSpent,
+          period: 'monthly',
+          startDate,
+          endDate,
+          status,
+          isRecurring: true,
+          recurringConfig: {
+            frequency: 'monthly',
+            autoRenew: true,
+          },
+          alertThreshold: 75,
+        });
+      }
+
+      // Housing Budget (recurring, all months)
+      budgets.push({
         userId: demoUser._id,
-        name: 'Shopping Budget',
-        category: shoppingCategory._id,
-        targetAmount: 400,
-        spentAmount: shoppingSpent,
+        name: 'Housing & Rent',
+        category: housingCategory._id,
+        targetAmount: 1300,
+        spentAmount: housingSpent,
         period: 'monthly',
-        startDate: startOfMonth,
-        endDate: endOfMonth,
-        alertThreshold: 75,
-      },
-      {
-        userId: demoUser._id,
-        name: 'Entertainment Budget',
-        category: entertainmentCategory._id,
-        targetAmount: 200,
-        spentAmount: entertainmentSpent,
-        period: 'monthly',
-        startDate: startOfMonth,
-        endDate: endOfMonth,
+        startDate,
+        endDate,
+        status,
         isRecurring: true,
         recurringConfig: {
           frequency: 'monthly',
           autoRenew: true,
         },
-        alertThreshold: 75,
-      },
-    ];
+        alertThreshold: 90,
+      });
+
+      // Bills & Utilities Budget (recurring, all months)
+      budgets.push({
+        userId: demoUser._id,
+        name: 'Bills & Utilities',
+        category: billsCategory._id,
+        targetAmount: 250,
+        spentAmount: billsSpent,
+        period: 'monthly',
+        startDate,
+        endDate,
+        status,
+        isRecurring: true,
+        recurringConfig: {
+          frequency: 'monthly',
+          autoRenew: true,
+        },
+        alertThreshold: 85,
+      });
+    }
+
+    // Add a yearly budget for the current year
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+    const yearEnd = new Date(now.getFullYear(), 11, 31);
+    const yearlyTravelSpent = expenses
+      .filter(e => {
+        const expenseDate = new Date(e.date);
+        return expenseDate.getFullYear() === now.getFullYear() &&
+               e.type === 'expense' &&
+               e.category.toString() === travelCategory._id.toString();
+      })
+      .reduce((sum, e) => sum + e.amount, 0);
+
+    budgets.push({
+      userId: demoUser._id,
+      name: 'Annual Travel Budget',
+      category: travelCategory._id,
+      targetAmount: 5000,
+      spentAmount: yearlyTravelSpent,
+      period: 'yearly',
+      startDate: yearStart,
+      endDate: yearEnd,
+      status: 'active',
+      alertThreshold: 80,
+    });
 
     await Budget.insertMany(budgets);
-    console.log(`✓ Created ${budgets.length} sample budgets`);
+    console.log(`✓ Created ${budgets.length} sample budgets across 6 months`);
 
     // Create sample goals
     console.log('Creating sample goals...');

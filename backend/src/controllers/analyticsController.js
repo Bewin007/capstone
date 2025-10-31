@@ -372,4 +372,92 @@ exports.getTransactions = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get budget analysis for date range
+// @route   GET /api/analytics/budget-analysis
+// @access  Private
+exports.getBudgetAnalysis = asyncHandler(async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  const filter = { userId: new mongoose.Types.ObjectId(req.user.id) };
+
+  // Filter budgets that overlap with the date range
+  if (startDate && endDate) {
+    filter.$or = [
+      // Budget starts within range
+      { startDate: { $gte: new Date(startDate), $lte: new Date(endDate) } },
+      // Budget ends within range
+      { endDate: { $gte: new Date(startDate), $lte: new Date(endDate) } },
+      // Budget spans the entire range
+      { startDate: { $lte: new Date(startDate) }, endDate: { $gte: new Date(endDate) } },
+    ];
+  }
+
+  const budgets = await Budget.find(filter)
+    .populate('category', 'name icon color')
+    .sort('-startDate');
+
+  // Calculate budget statistics
+  const budgetAnalysis = budgets.map(budget => {
+    const percentage = budget.targetAmount > 0
+      ? (budget.spentAmount / budget.targetAmount) * 100
+      : 0;
+    const remaining = budget.targetAmount - budget.spentAmount;
+    const isOverBudget = budget.spentAmount > budget.targetAmount;
+
+    return {
+      _id: budget._id,
+      name: budget.name,
+      category: budget.category,
+      targetAmount: budget.targetAmount,
+      spentAmount: budget.spentAmount,
+      remaining,
+      percentage: percentage.toFixed(2),
+      isOverBudget,
+      status: budget.status,
+      period: budget.period,
+      startDate: budget.startDate,
+      endDate: budget.endDate,
+      isRecurring: budget.isRecurring,
+      alertThreshold: budget.alertThreshold,
+    };
+  });
+
+  // Calculate overall statistics
+  const totalBudgeted = budgets.reduce((sum, b) => sum + b.targetAmount, 0);
+  const totalSpent = budgets.reduce((sum, b) => sum + b.spentAmount, 0);
+  const totalRemaining = totalBudgeted - totalSpent;
+  const overallPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
+
+  const onTrackCount = budgets.filter(b => {
+    const threshold = b.alertThreshold || 80;
+    const pct = (b.spentAmount / b.targetAmount) * 100;
+    return pct <= threshold;
+  }).length;
+
+  const nearLimitCount = budgets.filter(b => {
+    const threshold = b.alertThreshold || 80;
+    const pct = (b.spentAmount / b.targetAmount) * 100;
+    return pct > threshold && pct <= 100;
+  }).length;
+
+  const exceededCount = budgets.filter(b => b.spentAmount > b.targetAmount).length;
+
+  res.status(200).json({
+    success: true,
+    data: {
+      budgets: budgetAnalysis,
+      summary: {
+        totalBudgeted,
+        totalSpent,
+        totalRemaining,
+        overallPercentage: overallPercentage.toFixed(2),
+        totalBudgets: budgets.length,
+        onTrackCount,
+        nearLimitCount,
+        exceededCount,
+      },
+    },
+  });
+});
+
 module.exports = exports;
