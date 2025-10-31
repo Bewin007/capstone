@@ -16,7 +16,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format, startOfMonth, endOfMonth, startOfYear, subMonths } from 'date-fns';
-import { analyticsService, TransactionData } from '../services/analyticsService';
+import { analyticsService, TransactionData, BudgetAnalysisData } from '../services/analyticsService';
+import { ProgressBar } from 'react-bootstrap';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF6B9D'];
 
@@ -48,12 +49,16 @@ const Reports: React.FC = () => {
   const [totalTransactions, setTotalTransactions] = useState(0);
   const transactionsPerPage = 10;
 
+  // Budget analysis state
+  const [budgetAnalysis, setBudgetAnalysis] = useState<BudgetAnalysisData | null>(null);
+
   useEffect(() => {
     loadAllData();
   }, [dateRange, trendPeriod, comparisonMonths]);
 
   useEffect(() => {
     loadTransactions();
+    loadBudgetAnalysis();
   }, [dateRange, currentPage]);
 
   const loadAllData = async () => {
@@ -108,6 +113,18 @@ const Reports: React.FC = () => {
       setTotalTransactions(result.pagination.total);
     } catch (err: any) {
       console.error('Error loading transactions:', err);
+    }
+  };
+
+  const loadBudgetAnalysis = async () => {
+    try {
+      const result = await analyticsService.getBudgetAnalysis(
+        dateRange.startDate,
+        dateRange.endDate
+      );
+      setBudgetAnalysis(result);
+    } catch (err: any) {
+      console.error('Error loading budget analysis:', err);
     }
   };
 
@@ -245,6 +262,114 @@ const Reports: React.FC = () => {
             </Card>
           </Col>
         </Row>
+      )}
+
+      {/* Budget Analysis Section */}
+      {budgetAnalysis && budgetAnalysis.budgets.length > 0 && (
+        <>
+          <Row className="mb-4">
+            <Col>
+              <h4>Budget Performance Analysis</h4>
+            </Col>
+          </Row>
+
+          {/* Budget Summary Cards */}
+          <Row className="mb-4">
+            <Col md={3}>
+              <Card className="text-center">
+                <Card.Body>
+                  <h6 className="text-muted">Total Budgeted</h6>
+                  <h3 className="text-primary">${budgetAnalysis.summary.totalBudgeted.toFixed(2)}</h3>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={3}>
+              <Card className="text-center">
+                <Card.Body>
+                  <h6 className="text-muted">Total Spent</h6>
+                  <h3 className="text-info">${budgetAnalysis.summary.totalSpent.toFixed(2)}</h3>
+                  <small className="text-muted">{budgetAnalysis.summary.overallPercentage}% of budget</small>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={3}>
+              <Card className="text-center">
+                <Card.Body>
+                  <h6 className="text-muted">Remaining</h6>
+                  <h3 className={budgetAnalysis.summary.totalRemaining >= 0 ? 'text-success' : 'text-danger'}>
+                    ${budgetAnalysis.summary.totalRemaining.toFixed(2)}
+                  </h3>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={3}>
+              <Card className="text-center">
+                <Card.Body>
+                  <h6 className="text-muted">Budget Status</h6>
+                  <div>
+                    <Badge bg="success" className="me-1">{budgetAnalysis.summary.onTrackCount} On Track</Badge>
+                    <Badge bg="warning" className="me-1">{budgetAnalysis.summary.nearLimitCount} Near Limit</Badge>
+                    <Badge bg="danger">{budgetAnalysis.summary.exceededCount} Exceeded</Badge>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Budget Details */}
+          <Row className="mb-4">
+            {budgetAnalysis.budgets.map((budget) => (
+              <Col md={6} lg={4} key={budget._id} className="mb-3">
+                <Card className="h-100">
+                  <Card.Body>
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <h6 className="mb-1">
+                          {budget.category.icon} {budget.name}
+                          {budget.isRecurring && (
+                            <Badge bg="info" className="ms-2" style={{ fontSize: '0.7rem' }}>
+                              Recurring
+                            </Badge>
+                          )}
+                        </h6>
+                        <small className="text-muted">{budget.period}</small>
+                      </div>
+                      <Badge bg={budget.isOverBudget ? 'danger' : parseFloat(budget.percentage) > (budget.alertThreshold || 80) ? 'warning' : 'success'}>
+                        {budget.percentage}%
+                      </Badge>
+                    </div>
+
+                    <div className="mb-3">
+                      <div className="d-flex justify-content-between text-muted small mb-1">
+                        <span>Spent: ${budget.spentAmount.toFixed(2)}</span>
+                        <span>Budget: ${budget.targetAmount.toFixed(2)}</span>
+                      </div>
+                      <ProgressBar
+                        now={Math.min(parseFloat(budget.percentage), 100)}
+                        variant={budget.isOverBudget ? 'danger' : parseFloat(budget.percentage) > (budget.alertThreshold || 80) ? 'warning' : 'success'}
+                      />
+                    </div>
+
+                    <div className="text-muted small">
+                      <div className={budget.remaining >= 0 ? 'text-success' : 'text-danger'}>
+                        {budget.remaining >= 0 ? (
+                          <span>💰 ${budget.remaining.toFixed(2)} remaining</span>
+                        ) : (
+                          <span>⚠️ ${Math.abs(budget.remaining).toFixed(2)} over budget</span>
+                        )}
+                      </div>
+                      <div className="mt-1">
+                        <small>
+                          {format(new Date(budget.startDate), 'MMM dd')} - {format(new Date(budget.endDate), 'MMM dd, yyyy')}
+                        </small>
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </>
       )}
 
       {/* Monthly Comparison - Historical View */}

@@ -18,11 +18,13 @@ import { Budget, Category, BudgetFormData } from '../types';
 
 const Budgets: React.FC = () => {
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [filteredBudgets, setFilteredBudgets] = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [formData, setFormData] = useState<BudgetFormData>({
     name: '',
     category: '',
@@ -44,6 +46,7 @@ const Budgets: React.FC = () => {
         categoryService.getCategories('expense'),
       ]);
       setBudgets(budgetsData);
+      setFilteredBudgets(budgetsData);
       setCategories(categoriesData);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load data');
@@ -51,6 +54,15 @@ const Budgets: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Apply filter when budgets or statusFilter changes
+    if (statusFilter === 'all') {
+      setFilteredBudgets(budgets);
+    } else {
+      setFilteredBudgets(budgets.filter(budget => budget.status === statusFilter));
+    }
+  }, [budgets, statusFilter]);
 
   const handleShowModal = (budget?: Budget) => {
     if (budget) {
@@ -149,9 +161,31 @@ const Budgets: React.FC = () => {
 
       {error && <Alert variant="danger">{error}</Alert>}
 
+      {/* Filter Section */}
+      <Row className="mb-4">
+        <Col md={6} lg={4}>
+          <Card>
+            <Card.Body>
+              <Form.Group>
+                <Form.Label className="fw-bold">Filter by Status</Form.Label>
+                <Form.Select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="all">All Budgets ({budgets.length})</option>
+                  <option value="active">Active ({budgets.filter(b => b.status === 'active').length})</option>
+                  <option value="completed">Completed ({budgets.filter(b => b.status === 'completed').length})</option>
+                  <option value="exceeded">Exceeded ({budgets.filter(b => b.status === 'exceeded').length})</option>
+                </Form.Select>
+              </Form.Group>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
       <Row>
-        {budgets.length > 0 ? (
-          budgets.map((budget) => {
+        {filteredBudgets.length > 0 ? (
+          filteredBudgets.map((budget) => {
             const percentage = (budget.spentAmount / budget.targetAmount) * 100;
             const remaining = budget.targetAmount - budget.spentAmount;
 
@@ -232,7 +266,10 @@ const Budgets: React.FC = () => {
           <Col>
             <Card>
               <Card.Body className="text-center text-muted">
-                No budgets found. Create your first budget to start tracking your spending.
+                {budgets.length === 0
+                  ? 'No budgets found. Create your first budget to start tracking your spending.'
+                  : `No ${statusFilter === 'all' ? '' : statusFilter} budgets found.`
+                }
               </Card.Body>
             </Card>
           </Col>

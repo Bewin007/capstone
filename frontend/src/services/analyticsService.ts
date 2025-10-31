@@ -68,6 +68,42 @@ export interface TopMerchantData {
   count: number;
 }
 
+export interface BudgetAnalysisItem {
+  _id: string;
+  name: string;
+  category: {
+    _id: string;
+    name: string;
+    icon: string;
+    color: string;
+  };
+  targetAmount: number;
+  spentAmount: number;
+  remaining: number;
+  percentage: string;
+  isOverBudget: boolean;
+  status: string;
+  period: string;
+  startDate: string;
+  endDate: string;
+  isRecurring: boolean;
+  alertThreshold?: number;
+}
+
+export interface BudgetAnalysisData {
+  budgets: BudgetAnalysisItem[];
+  summary: {
+    totalBudgeted: number;
+    totalSpent: number;
+    totalRemaining: number;
+    overallPercentage: string;
+    totalBudgets: number;
+    onTrackCount: number;
+    nearLimitCount: number;
+    exceededCount: number;
+  };
+}
+
 export interface TransactionData {
   _id: string;
   userId: string;
@@ -206,6 +242,19 @@ export const analyticsService = {
       };
     } catch (error: any) {
       console.error('Error fetching transactions:', error);
+      throw error;
+    }
+  },
+
+  getBudgetAnalysis: async (startDate?: string, endDate?: string): Promise<BudgetAnalysisData> => {
+    try {
+      const params: any = {};
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+      const response = await api.get<ApiResponse<BudgetAnalysisData>>('/analytics/budget-analysis', { params });
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Error fetching budget analysis:', error);
       throw error;
     }
   },
