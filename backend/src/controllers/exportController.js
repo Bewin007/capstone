@@ -233,6 +233,12 @@ exports.exportExpensesToPDF = asyncHandler(async (req, res) => {
   // Create PDF
   const doc = new jsPDF();
   
+  // Verify autoTable is available
+  if (typeof doc.autoTable !== 'function') {
+    console.error('autoTable function not available on jsPDF instance');
+    throw new CustomError('PDF generation failed - autoTable not available', 500);
+  }
+  
   // Add title
   doc.setFontSize(20);
   doc.text('Expense Report', 20, 20);

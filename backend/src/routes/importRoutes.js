@@ -3,6 +3,8 @@ const multer = require('multer');
 const path = require('path');
 const {
   importExpensesFromCSV,
+  importExpensesFromBank,
+  categorizePendingTransactions,
 } = require('../controllers/importController');
 const { protect } = require('../middleware/auth');
 
@@ -37,5 +39,7 @@ const upload = multer({
 router.use(protect);
 
 router.post('/expenses/csv', upload.single('file'), importExpensesFromCSV);
+router.post('/expenses/bank', importExpensesFromBank);
+router.post('/expenses/categorize', categorizePendingTransactions);
 
 module.exports = router;

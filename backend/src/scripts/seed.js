@@ -6,6 +6,7 @@ const Category = require('../models/Category');
 const Expense = require('../models/Expense');
 const Budget = require('../models/Budget');
 const Goal = require('../models/Goal');
+const BankAccount = require('../models/BankAccount');
 
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/wealthwise';
 
@@ -51,6 +52,7 @@ async function seed() {
     await Expense.deleteMany({});
     await Budget.deleteMany({});
     await Goal.deleteMany({});
+    await BankAccount.deleteMany({});
 
     // Drop existing indexes on Budget collection to avoid conflicts
     try {
@@ -567,6 +569,36 @@ async function seed() {
 
     await Goal.insertMany(goals);
     console.log(`✓ Created ${goals.length} sample goals`);
+
+    // Create sample bank accounts
+    console.log('Creating sample bank accounts...');
+    const bankAccounts = [
+      {
+        userId: demoUser._id,
+        bankName: 'Demo Bank',
+        accountName: 'Demo User - Primary Checking',
+        accountNumber: '1234567890',
+        accountType: 'checking',
+        bankUserId: 'user123',
+        balance: 15250.75,
+        lastSyncDate: new Date(),
+        connectionStatus: 'connected',
+      },
+      {
+        userId: demoUser._id,
+        bankName: 'Demo Savings Bank',
+        accountName: 'Demo User - High Yield Savings',
+        accountNumber: '9876543210',
+        accountType: 'savings',
+        bankUserId: 'user456',
+        balance: 8420.30,
+        lastSyncDate: new Date(),
+        connectionStatus: 'connected',
+      },
+    ];
+
+    await BankAccount.insertMany(bankAccounts);
+    console.log(`✓ Created ${bankAccounts.length} sample bank accounts`);
 
     console.log('\n========================================');
     console.log('✓ Database seeded successfully!');

@@ -17,6 +17,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const exportRoutes = require('./routes/exportRoutes');
 const importRoutes = require('./routes/importRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const bankAccountRoutes = require('./routes/bankAccountRoutes');
 
 // Initialize express app
 const app = express();
@@ -56,6 +57,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/bank-accounts', bankAccountRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

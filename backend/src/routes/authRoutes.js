@@ -6,6 +6,10 @@ const {
   getMe,
   updateProfile,
   changePassword,
+  forgotPassword,
+  verifyOTP,
+  resetPassword,
+  resendOTP,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
@@ -26,6 +30,10 @@ const loginValidation = [
 // Public routes
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
+router.post('/forgot-password', forgotPassword);
+router.post('/verify-otp', verifyOTP);
+router.post('/reset-password', resetPassword);
+router.post('/resend-otp', resendOTP);
 
 // Protected routes
 router.get('/me', protect, getMe);
