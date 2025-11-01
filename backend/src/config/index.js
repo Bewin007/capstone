@@ -3,7 +3,7 @@ require('dotenv').config();
 const config = {
   port: process.env.PORT || 5000,
   nodeEnv: process.env.NODE_ENV || 'development',
-  mongodbUri: process.env.MONGODB_URI || 'mongodb://admin:admin123@localhost:27017/wealthwise?authSource=admin',
+  mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/wealthwise',
   jwtSecret: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   categorizationServiceUrl: process.env.CATEGORIZATION_SERVICE_URL || 'http://localhost:5001/api',

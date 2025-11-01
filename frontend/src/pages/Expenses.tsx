@@ -53,6 +53,7 @@ const Expenses: React.FC = () => {
     endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd'),
     type: '',
     category: '',
+    format: 'csv',
   });
 
   const [formData, setFormData] = useState<ExpenseFormData>({
@@ -140,13 +141,34 @@ const Expenses: React.FC = () => {
 
     try {
       setLoading(true);
-      await exportService.exportExpenses(
-        exportFilters.startDate,
-        exportFilters.endDate,
-        exportFilters.type,
-        exportFilters.category
-      );
-      setSuccess('Expenses exported successfully!');
+      
+      switch (exportFilters.format) {
+        case 'excel':
+          await exportService.exportExpensesToExcel(
+            exportFilters.startDate,
+            exportFilters.endDate,
+            exportFilters.type,
+            exportFilters.category
+          );
+          break;
+        case 'pdf':
+          await exportService.exportExpensesToPDF(
+            exportFilters.startDate,
+            exportFilters.endDate,
+            exportFilters.type,
+            exportFilters.category
+          );
+          break;
+        default:
+          await exportService.exportExpenses(
+            exportFilters.startDate,
+            exportFilters.endDate,
+            exportFilters.type,
+            exportFilters.category
+          );
+      }
+      
+      setSuccess(`Expenses exported successfully as ${exportFilters.format.toUpperCase()}!`);
       setShowExportModal(false);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to export expenses');
@@ -604,6 +626,18 @@ const Expenses: React.FC = () => {
                 ))}
               </Form.Select>
             </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Export Format *</Form.Label>
+              <Form.Select
+                value={exportFilters.format}
+                onChange={(e) => setExportFilters({ ...exportFilters, format: e.target.value })}
+              >
+                <option value="csv">CSV Format</option>
+                <option value="excel">Excel (.xlsx)</option>
+                <option value="pdf">PDF Report</option>
+              </Form.Select>
+            </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
@@ -611,7 +645,7 @@ const Expenses: React.FC = () => {
             Cancel
           </Button>
           <Button variant="success" onClick={handleExport} disabled={loading}>
-            {loading ? 'Exporting...' : 'Export to CSV'}
+            {loading ? 'Exporting...' : `Export to ${exportFilters.format.toUpperCase()}`}
           </Button>
         </Modal.Footer>
       </Modal>

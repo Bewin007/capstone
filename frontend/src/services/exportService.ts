@@ -51,4 +51,74 @@ export const exportService = {
     link.click();
     link.remove();
   },
+
+  // Export expenses to Excel
+  exportExpensesToExcel: async (startDate: string, endDate: string, type?: string, category?: string): Promise<void> => {
+    const params: any = { startDate, endDate };
+    if (type) params.type = type;
+    if (category) params.category = category;
+
+    const response = await api.get('/export/expenses/excel', {
+      params,
+      responseType: 'blob',
+    });
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `expenses_${startDate}_to_${endDate}.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  },
+
+  // Export expenses to PDF
+  exportExpensesToPDF: async (startDate: string, endDate: string, type?: string, category?: string): Promise<void> => {
+    const params: any = { startDate, endDate };
+    if (type) params.type = type;
+    if (category) params.category = category;
+
+    const response = await api.get('/export/expenses/pdf', {
+      params,
+      responseType: 'blob',
+    });
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `expenses_${startDate}_to_${endDate}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  },
+
+  // Export budgets to Excel
+  exportBudgetsToExcel: async (): Promise<void> => {
+    const response = await api.get('/export/budgets/excel', {
+      responseType: 'blob',
+    });
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'budgets_report.xlsx');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  },
+
+  // Export goals to Excel
+  exportGoalsToExcel: async (): Promise<void> => {
+    const response = await api.get('/export/goals/excel', {
+      responseType: 'blob',
+    });
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'goals_report.xlsx');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  },
 };

@@ -7,7 +7,7 @@ const Expense = require('../models/Expense');
 const Budget = require('../models/Budget');
 const Goal = require('../models/Goal');
 
-const mongoURI = process.env.MONGODB_URI || 'mongodb://admin:admin123@localhost:27017/wealthwise?authSource=admin';
+const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/wealthwise';
 
 const systemCategories = [
   // Expense categories
@@ -51,6 +51,17 @@ async function seed() {
     await Expense.deleteMany({});
     await Budget.deleteMany({});
     await Goal.deleteMany({});
+
+    // Drop existing indexes on Budget collection to avoid conflicts
+    try {
+      const db = mongoose.connection.db;
+      const budgetCollection = db.collection('budgets');
+      await budgetCollection.dropIndexes();
+      console.log('✓ Dropped existing budget indexes');
+    } catch (err) {
+      console.log('Note: No existing budget indexes to drop or collection doesn\'t exist');
+    }
+
     console.log('✓ Existing data cleared');
 
     // Create system categories

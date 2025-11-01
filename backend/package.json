@@ -1,7 +1,7 @@
 {
-  "name": "wealthwise-backend",
+  "name": "react-express-template-backend",
   "version": "1.0.0",
-  "description": "Backend API for Wealthwise Financial Management Application",
+  "description": "Express.js backend for React Express Template - A complete MERN stack financial management application",
   "main": "src/index.js",
   "type": "commonjs",
   "scripts": {
@@ -10,9 +10,18 @@
     "seed": "node src/scripts/seed.js"
   },
   "keywords": [
+    "express",
+    "mongodb",
+    "nodejs",
+    "backend",
+    "api",
+    "mern",
+    "template",
     "finance",
     "budget",
-    "expense-tracker"
+    "expense-tracker",
+    "jwt",
+    "authentication"
   ],
   "author": "",
   "license": "MIT",
@@ -22,14 +31,18 @@
     "cors": "^2.8.5",
     "date-fns": "^3.0.6",
     "dotenv": "^16.3.1",
+    "exceljs": "^4.4.0",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.3",
+    "jspdf-autotable": "^5.0.2",
     "mongoose": "^8.0.3",
     "morgan": "^1.10.1",
     "multer": "^1.4.5-lts.1",
     "papaparse": "^5.4.1",
-    "pdf-parse": "^1.1.1"
+    "pdf-parse": "^1.1.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

@@ -1,0 +1,3 @@
+frontend: npm install axios bootstrap chart.js date-fns react-bootstrap react-chartjs-2 react-router-dom recharts typescript @types/react @types/react-dom @types/react-router-dom @types/node
+
+backend: npm install axios bcryptjs cors date-fns dotenv express express-validator jsonwebtoken mongoose morgan multer papaparse pdf-parse

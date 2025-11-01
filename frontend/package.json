@@ -1,6 +1,7 @@
 {
-  "name": "wealthwise-frontend",
+  "name": "react-express-template-frontend",
   "version": "1.0.0",
+  "description": "React TypeScript frontend for React Express Template - A complete MERN stack financial management application",
   "private": true,
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
