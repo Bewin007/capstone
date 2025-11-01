@@ -1,0 +1,372 @@
+{
+  "users": [
+    {
+      "id": "user123",
+      "name": "Demo User",
+      "email": "demo@wealthwise.com",
+      "accountNumber": "1234567890",
+      "bankName": "Demo Bank",
+      "accountType": "checking",
+      "balance": 15250.75
+    },
+    {
+      "id": "user456",
+      "name": "Demo User",
+      "email": "demo@wealthwise.com",
+      "accountNumber": "9876543210",
+      "bankName": "Demo Savings Bank",
+      "accountType": "savings",
+      "balance": 8420.30
+    },
+    {
+      "id": "user789",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "accountNumber": "1111222233",
+      "bankName": "Community Bank",
+      "accountType": "checking",
+      "balance": 5680.45
+    },
+    {
+      "id": "user999",
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "accountNumber": "4444555566",
+      "bankName": "First National Bank",
+      "accountType": "checking",
+      "balance": 12345.67
+    }
+  ],
+  "transactions": [
+    {
+      "id": "txn001",
+      "userId": "user123",
+      "date": "2024-11-01",
+      "amount": -85.50,
+      "description": "Amazon Purchase",
+      "merchant": "Amazon",
+      "type": "expense",
+      "category": "Shopping",
+      "reference": "AMZ123456"
+    },
+    {
+      "id": "txn002", 
+      "userId": "user123",
+      "date": "2024-10-14",
+      "amount": -45.20,
+      "description": "Grocery Store",
+      "merchant": "Walmart",
+      "type": "expense",
+      "category": "Food & Dining",
+      "reference": "WMT789012"
+    },
+    {
+      "id": "txn003",
+      "userId": "user123", 
+      "date": "2024-10-13",
+      "amount": 2500.00,
+      "description": "Salary Deposit",
+      "merchant": "Tech Corp",
+      "type": "income",
+      "category": "Salary",
+      "reference": "SAL202410"
+    },
+    {
+      "id": "txn004",
+      "userId": "user123",
+      "date": "2024-10-12",
+      "amount": -120.00,
+      "description": "Electric Bill",
+      "merchant": "Power Company",
+      "type": "expense", 
+      "category": "Utilities",
+      "reference": "ELEC1012"
+    },
+    {
+      "id": "txn005",
+      "userId": "user123",
+      "date": "2024-10-11",
+      "amount": -35.75,
+      "description": "Coffee Shop",
+      "merchant": "Starbucks",
+      "type": "expense",
+      "category": "Food & Dining",
+      "reference": "SBX567890"
+    },
+    {
+      "id": "txn006",
+      "userId": "user123",
+      "date": "2024-10-10",
+      "amount": -250.00,
+      "description": "Car Insurance",
+      "merchant": "Insurance Co",
+      "type": "expense",
+      "category": "Insurance",
+      "reference": "INS202410"
+    },
+    {
+      "id": "txn007",
+      "userId": "user123",
+      "date": "2024-10-09",
+      "amount": -15.99,
+      "description": "Netflix Subscription",
+      "merchant": "Netflix",
+      "type": "expense",
+      "category": "Entertainment",
+      "reference": "NFLX0924"
+    },
+    {
+      "id": "txn008",
+      "userId": "user123",
+      "date": "2024-10-08",
+      "amount": -75.30,
+      "description": "Gas Station",
+      "merchant": "Shell",
+      "type": "expense",
+      "category": "Transportation", 
+      "reference": "SHL123789"
+    },
+    {
+      "id": "txn009",
+      "userId": "user123",
+      "date": "2024-10-07",
+      "amount": -200.00,
+      "description": "Online Course",
+      "merchant": "Udemy",
+      "type": "expense",
+      "category": "Education",
+      "reference": "UDM456123"
+    },
+    {
+      "id": "txn010",
+      "userId": "user123",
+      "date": "2024-10-06",
+      "amount": 50.00,
+      "description": "Cashback Reward",
+      "merchant": "Credit Card",
+      "type": "income",
+      "category": "Rewards",
+      "reference": "CB102024"
+    },
+    {
+      "id": "txn011",
+      "userId": "user456",
+      "date": "2024-10-15",
+      "amount": -95.25,
+      "description": "Department Store",
+      "merchant": "Target",
+      "type": "expense",
+      "category": "Shopping",
+      "reference": "TGT789456"
+    },
+    {
+      "id": "txn012",
+      "userId": "user456",
+      "date": "2024-10-14",
+      "amount": 1800.00,
+      "description": "Freelance Payment",
+      "merchant": "Client ABC",
+      "type": "income",
+      "category": "Freelance",
+      "reference": "FRL102024"
+    },
+    {
+      "id": "txn013",
+      "userId": "user456",
+      "date": "2024-10-13",
+      "amount": -65.40,
+      "description": "Restaurant",
+      "merchant": "Olive Garden",
+      "type": "expense",
+      "category": "Food & Dining",
+      "reference": "OG456789"
+    },
+    {
+      "id": "txn014",
+      "userId": "user456",
+      "date": "2024-10-12",
+      "amount": -400.00,
+      "description": "Rent Payment",
+      "merchant": "Property Management",
+      "type": "expense",
+      "category": "Housing",
+      "reference": "RENT1024"
+    },
+    {
+      "id": "txn015",
+      "userId": "user456",
+      "date": "2024-10-11",
+      "amount": -25.99,
+      "description": "Mobile Bill",
+      "merchant": "Verizon",
+      "type": "expense",
+      "category": "Utilities",
+      "reference": "VZN102024"
+    },
+    {
+      "id": "txn016",
+      "userId": "user789",
+      "date": "2024-11-01",
+      "amount": 3200.00,
+      "description": "Salary Deposit",
+      "merchant": "TechCorp Inc",
+      "type": "income",
+      "category": "Salary",
+      "reference": "PAY110124"
+    },
+    {
+      "id": "txn017",
+      "userId": "user789",
+      "date": "2024-10-31",
+      "amount": -120.00,
+      "description": "Grocery Shopping",
+      "merchant": "Whole Foods",
+      "type": "expense",
+      "category": "Food & Dining",
+      "reference": "WF103124"
+    },
+    {
+      "id": "txn018",
+      "userId": "user789",
+      "date": "2024-10-30",
+      "amount": -45.99,
+      "description": "Gas Station",
+      "merchant": "Shell",
+      "type": "expense",
+      "category": "Transportation",
+      "reference": "SHL103024"
+    },
+    {
+      "id": "txn019",
+      "userId": "user789",
+      "date": "2024-10-29",
+      "amount": -15.99,
+      "description": "Netflix Subscription",
+      "merchant": "Netflix",
+      "type": "expense",
+      "category": "Entertainment",
+      "reference": "NFX102924"
+    },
+    {
+      "id": "txn020",
+      "userId": "user999",
+      "date": "2024-11-01",
+      "amount": 4500.00,
+      "description": "Freelance Payment",
+      "merchant": "Design Studio LLC",
+      "type": "income",
+      "category": "Freelance",
+      "reference": "FRL110124"
+    },
+    {
+      "id": "txn021",
+      "userId": "user999",
+      "date": "2024-10-31",
+      "amount": -890.00,
+      "description": "Rent Payment",
+      "merchant": "City Apartments",
+      "type": "expense",
+      "category": "Housing",
+      "reference": "RENT1031"
+    },
+    {
+      "id": "txn022",
+      "userId": "user999",
+      "date": "2024-10-30",
+      "amount": -75.30,
+      "description": "Uber Rides",
+      "merchant": "Uber",
+      "type": "expense",
+      "category": "Transportation",
+      "reference": "UBR103024"
+    },
+    {
+      "id": "txn023",
+      "userId": "user999",
+      "date": "2024-10-29",
+      "amount": -180.50,
+      "description": "Grocery Store",
+      "merchant": "Target",
+      "type": "expense",
+      "category": "Shopping",
+      "reference": "TGT102924"
+    },
+    {
+      "id": "txn024",
+      "userId": "user456",
+      "date": "2024-11-01",
+      "amount": 500.00,
+      "description": "Savings Transfer",
+      "merchant": "Demo Bank Transfer",
+      "type": "income",
+      "category": "Savings",
+      "reference": "SAV110124"
+    },
+    {
+      "id": "txn025",
+      "userId": "user123",
+      "date": "2024-10-31",
+      "amount": -12.99,
+      "description": "Spotify Premium",
+      "merchant": "Spotify",
+      "type": "expense",
+      "category": "Entertainment",
+      "reference": "SPT103124"
+    },
+    {
+      "id": "txn026",
+      "userId": "user123",
+      "date": "2024-10-30",
+      "amount": -65.20,
+      "description": "Dinner Out",
+      "merchant": "Olive Garden",
+      "type": "expense",
+      "category": "Food & Dining",
+      "reference": "OLG103024"
+    },
+    {
+      "id": "txn027",
+      "userId": "user123",
+      "date": "2024-10-29",
+      "amount": -250.00,
+      "description": "Car Insurance",
+      "merchant": "State Farm",
+      "type": "expense",
+      "category": "Insurance",
+      "reference": "INS102924"
+    },
+    {
+      "id": "txn028",
+      "userId": "user789",
+      "date": "2024-10-28",
+      "amount": -89.99,
+      "description": "Online Course",
+      "merchant": "Udemy",
+      "type": "expense",
+      "category": "Education",
+      "reference": "UDM102824"
+    },
+    {
+      "id": "txn029",
+      "userId": "user999",
+      "date": "2024-10-28",
+      "amount": -199.99,
+      "description": "Gym Membership",
+      "merchant": "Planet Fitness",
+      "type": "expense",
+      "category": "Healthcare",
+      "reference": "GYM102824"
+    },
+    {
+      "id": "txn030",
+      "userId": "user456",
+      "date": "2024-10-27",
+      "amount": 1000.00,
+      "description": "Investment Dividend",
+      "merchant": "Vanguard",
+      "type": "income",
+      "category": "Investment",
+      "reference": "DIV102724"
+    }
+  ]
+}

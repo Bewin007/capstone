@@ -74,6 +74,11 @@ const Login: React.FC = () => {
 
                 <div className="text-center">
                   <p className="mb-2">
+                    <Link to="/forgot-password" className="text-decoration-none">
+                      Forgot your password?
+                    </Link>
+                  </p>
+                  <p className="mb-2">
                     Don't have an account? <Link to="/register">Sign up</Link>
                   </p>
                   <p className="text-muted small">

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Container,
   Row,
@@ -19,16 +20,19 @@ import { expenseService } from '../services/expenseService';
 import { categoryService } from '../services/categoryService';
 import { exportService } from '../services/exportService';
 import { importService } from '../services/importService';
+import { bankAccountService, BankAccount } from '../services/bankAccountService';
 import { Expense, Category, ExpenseFormData } from '../types';
 
 const Expenses: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showBankImportModal, setShowBankImportModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,6 +60,15 @@ const Expenses: React.FC = () => {
     format: 'csv',
   });
 
+  // Bank import states
+  const [bankImportData, setBankImportData] = useState({
+    bankUserId: 'user123',
+    startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+    endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd'),
+  });
+  const [pendingTransactions, setPendingTransactions] = useState<any[]>([]);
+  const [showCategorizationModal, setShowCategorizationModal] = useState(false);
+
   const [formData, setFormData] = useState<ExpenseFormData>({
     type: 'expense',
     amount: 0,
@@ -66,6 +79,7 @@ const Expenses: React.FC = () => {
 
   useEffect(() => {
     loadCategories();
+    loadBankAccounts();
   }, []);
 
   useEffect(() => {
@@ -78,6 +92,15 @@ const Expenses: React.FC = () => {
       setCategories(categoriesData);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load categories');
+    }
+  };
+
+  const loadBankAccounts = async () => {
+    try {
+      const response = await bankAccountService.getBankAccounts();
+      setBankAccounts(response.data);
+    } catch (err: any) {
+      console.error('Failed to load bank accounts:', err);
     }
   };
 
@@ -197,6 +220,47 @@ const Expenses: React.FC = () => {
     }
   };
 
+  const handleBankImport = async () => {
+    try {
+      setLoading(true);
+      const result = await importService.importExpensesFromBank(
+        bankImportData.bankUserId,
+        bankImportData.startDate,
+        bankImportData.endDate
+      );
+      
+      if (result.data.needsCategorization > 0) {
+        setPendingTransactions(result.data.transactionsNeedingCategorization);
+        setShowCategorizationModal(true);
+        setSuccess(`Imported ${result.data.imported} transactions. ${result.data.needsCategorization} need categorization.`);
+      } else {
+        setSuccess(`Successfully imported ${result.data.imported} transactions from bank!`);
+        await loadExpenses();
+      }
+      
+      setShowBankImportModal(false);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to import from bank');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCategorizePendingTransactions = async () => {
+    try {
+      setLoading(true);
+      const result = await importService.categorizePendingTransactions(pendingTransactions);
+      setSuccess(`Successfully categorized ${result.data.imported} transactions!`);
+      await loadExpenses();
+      setShowCategorizationModal(false);
+      setPendingTransactions([]);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to categorize transactions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleShowModal = (expense?: Expense) => {
     if (expense) {
       setEditingExpense(expense);
@@ -278,9 +342,19 @@ const Expenses: React.FC = () => {
         </Col>
         <Col className="text-end">
           <ButtonGroup className="me-2">
-            <Button variant="success" onClick={() => setShowImportModal(true)}>
-              📥 Import CSV
-            </Button>
+            <Dropdown>
+              <Dropdown.Toggle variant="success" id="import-dropdown">
+                📥 Import
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item onClick={() => setShowImportModal(true)}>
+                  📄 Import CSV File
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => setShowBankImportModal(true)}>
+                  🏦 Import from Bank
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
             <Button variant="info" onClick={() => setShowExportModal(true)}>
               📤 Export
             </Button>
@@ -670,6 +744,128 @@ const Expenses: React.FC = () => {
             />
           </Form.Group>
         </Modal.Body>
+      </Modal>
+
+      {/* Bank Import Modal */}
+      <Modal show={showBankImportModal} onHide={() => setShowBankImportModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Import from Bank</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Alert variant="info">
+            <strong>Bank Import:</strong><br />
+            Connect to your simulated bank account to import recent transactions automatically.
+          </Alert>
+          
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Select Bank Account</Form.Label>
+              {bankAccounts.length === 0 ? (
+                <div>
+                  <Alert variant="warning">
+                    No bank accounts connected. <Link to="/bank-accounts">Connect a bank account</Link> first to import transactions.
+                  </Alert>
+                </div>
+              ) : (
+                <Form.Select
+                  value={bankImportData.bankUserId}
+                  onChange={(e) => setBankImportData({ ...bankImportData, bankUserId: e.target.value })}
+                >
+                  <option value="">Select an account...</option>
+                  {bankAccounts.map((account) => (
+                    <option key={account._id} value={account.bankUserId}>
+                      {account.bankName} - {account.accountName} (****{account.accountNumber.slice(-4)})
+                    </option>
+                  ))}
+                </Form.Select>
+              )}
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Start Date</Form.Label>
+              <Form.Control
+                type="date"
+                value={bankImportData.startDate}
+                onChange={(e) => setBankImportData({ ...bankImportData, startDate: e.target.value })}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>End Date</Form.Label>
+              <Form.Control
+                type="date"
+                value={bankImportData.endDate}
+                onChange={(e) => setBankImportData({ ...bankImportData, endDate: e.target.value })}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowBankImportModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleBankImport} disabled={loading}>
+            {loading ? 'Importing...' : 'Import from Bank'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Categorization Modal */}
+      <Modal show={showCategorizationModal} onHide={() => setShowCategorizationModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Categorize Imported Transactions</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Alert variant="warning">
+            The following transactions need manual categorization:
+          </Alert>
+          
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            {pendingTransactions.map((transaction, index) => (
+              <Card key={index} className="mb-3">
+                <Card.Body>
+                  <Row>
+                    <Col md={8}>
+                      <h6>{transaction.description}</h6>
+                      <small className="text-muted">
+                        {transaction.merchant} • {format(new Date(transaction.date), 'MMM dd, yyyy')} • ${transaction.amount}
+                      </small>
+                    </Col>
+                    <Col md={4}>
+                      <Form.Select
+                        value={transaction.category || ''}
+                        onChange={(e) => {
+                          const updatedTransactions = [...pendingTransactions];
+                          updatedTransactions[index].category = e.target.value;
+                          setPendingTransactions(updatedTransactions);
+                        }}
+                      >
+                        <option value="">Select Category</option>
+                        {categories.map((cat) => (
+                          <option key={cat._id} value={cat._id}>
+                            {cat.icon} {cat.name}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+            ))}
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCategorizationModal(false)}>
+            Cancel
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handleCategorizePendingTransactions} 
+            disabled={loading || pendingTransactions.some(t => !t.category)}
+          >
+            {loading ? 'Categorizing...' : 'Save All Transactions'}
+          </Button>
+        </Modal.Footer>
       </Modal>
     </Container>
   );

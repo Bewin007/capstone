@@ -15,4 +15,24 @@ export const importService = {
 
     return response.data;
   },
+
+  // Import expenses from bank
+  importExpensesFromBank: async (bankUserId: string, startDate?: string, endDate?: string): Promise<ApiResponse<any>> => {
+    const response = await api.post<ApiResponse<any>>('/import/expenses/bank', {
+      bankUserId,
+      startDate,
+      endDate,
+    });
+
+    return response.data;
+  },
+
+  // Categorize pending transactions
+  categorizePendingTransactions: async (transactions: any[]): Promise<ApiResponse<any>> => {
+    const response = await api.post<ApiResponse<any>>('/import/expenses/categorize', {
+      transactions,
+    });
+
+    return response.data;
+  },
 };

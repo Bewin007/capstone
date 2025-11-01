@@ -1,0 +1,14 @@
+{
+  "name": "bank-simulation-server",
+  "version": "1.0.0",
+  "description": "Mock bank server for transaction simulation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "json-server": "^1.0.0-beta.3",
+    "dotenv": "^16.3.1"
+  }
+}

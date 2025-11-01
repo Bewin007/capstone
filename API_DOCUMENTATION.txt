@@ -1,0 +1,1303 @@
+================================================================================
+                     WEALTHWISE FINANCIAL MANAGEMENT API DOCUMENTATION
+================================================================================
+
+Base URL: http://localhost:5000/api
+Version: 1.0.0
+Content-Type: application/json
+
+================================================================================
+                                AUTHENTICATION
+================================================================================
+
+All private endpoints require JWT token in Authorization header:
+Authorization: Bearer <jwt_token>
+
+================================================================================
+                                   ENDPOINTS
+================================================================================
+
+### USER MANAGEMENT
+
+1. POST /auth/register
+   Description: Register new user account
+   Access: Public
+   Request Body:
+   {
+     "name": "John Doe",
+     "email": "john@example.com",
+     "password": "password123"
+   }
+   Response (201):
+   {
+     "success": true,
+     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+     "user": {
+       "_id": "64f5b8c9e1234567890abcde",
+       "name": "John Doe",
+       "email": "john@example.com"
+     }
+   }
+
+2. POST /auth/login
+   Description: Login with email and password
+   Access: Public
+   Request Body:
+   {
+     "email": "john@example.com",
+     "password": "password123"
+   }
+   Response (200):
+   {
+     "success": true,
+     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+     "user": {
+       "_id": "64f5b8c9e1234567890abcde",
+       "name": "John Doe",
+       "email": "john@example.com"
+     }
+   }
+
+3. POST /auth/forgot-password
+   Description: Request password reset OTP
+   Access: Public
+   Request Body:
+   {
+     "email": "john@example.com"
+   }
+   Response (200):
+   {
+     "success": true,
+     "message": "OTP sent successfully",
+     "otp": "123456",
+     "resetToken": "abc123def456"
+   }
+
+4. POST /auth/reset-password
+   Description: Reset password using OTP and token
+   Access: Public
+   Request Body:
+   {
+     "resetToken": "abc123def456",
+     "otp": "123456",
+     "newPassword": "newPassword123"
+   }
+   Response (200):
+   {
+     "success": true,
+     "message": "Password reset successfully"
+   }
+
+5. GET /auth/profile
+   Description: Get current user profile
+   Access: Private
+   Response (200):
+   {
+     "success": true,
+     "data": {
+       "_id": "64f5b8c9e1234567890abcde",
+       "name": "John Doe",
+       "email": "john@example.com",
+       "createdAt": "2024-01-15T10:30:00.000Z"
+     }
+   }
+
+6. POST /auth/verify-otp
+   Description: Verify OTP during password reset
+   Access: Public
+   Request Body:
+   {
+     "resetToken": "abc123def456",
+     "otp": "123456"
+   }
+   Response (200):
+   {
+     "success": true,
+     "message": "OTP verified successfully",
+     "isValid": true
+   }
+
+7. POST /auth/resend-otp
+   Description: Resend OTP for password reset
+   Access: Public
+   Request Body:
+   {
+     "resetToken": "abc123def456"
+   }
+   Response (200):
+   {
+     "success": true,
+     "message": "OTP resent successfully",
+     "otp": "654321"
+   }
+
+8. GET /auth/me
+   Description: Get current authenticated user details
+   Access: Private
+   Response (200):
+   {
+     "success": true,
+     "data": {
+       "_id": "64f5b8c9e1234567890abcde",
+       "name": "John Doe",
+       "email": "john@example.com",
+       "createdAt": "2024-01-15T10:30:00.000Z"
+     }
+   }
+
+9. PUT /auth/profile
+   Description: Update user profile
+   Access: Private
+   Request Body:
+   {
+     "name": "John Updated",
+     "email": "johnupdated@example.com"
+   }
+   Response (200):
+   {
+     "success": true,
+     "message": "Profile updated successfully",
+     "data": {
+       "_id": "64f5b8c9e1234567890abcde",
+       "name": "John Updated",
+       "email": "johnupdated@example.com"
+     }
+   }
+
+10. PUT /auth/change-password
+    Description: Change user password
+    Access: Private
+    Request Body:
+    {
+      "currentPassword": "currentPass123",
+      "newPassword": "newPass123"
+    }
+    Response (200):
+    {
+      "success": true,
+      "message": "Password changed successfully"
+    }
+
+### EXPENSE MANAGEMENT
+
+11. GET /expenses
+   Description: Get all expenses for authenticated user
+   Access: Private
+   Query Parameters:
+   - page (optional): Page number (default: 1)
+   - limit (optional): Items per page (default: 10)
+   - startDate (optional): Filter from date (YYYY-MM-DD)
+   - endDate (optional): Filter to date (YYYY-MM-DD)
+   - category (optional): Category ID filter
+   - type (optional): expense|income
+   Response (200):
+   {
+     "success": true,
+     "data": {
+       "expenses": [
+         {
+           "_id": "64f5b8c9e1234567890abcdf",
+           "amount": 25.50,
+           "description": "Coffee",
+           "category": {
+             "_id": "64f5b8c9e1234567890abce0",
+             "name": "Food & Dining"
+           },
+           "date": "2024-01-15T00:00:00.000Z",
+           "type": "expense",
+           "merchant": "Starbucks",
+           "source": "manual"
+         }
+       ],
+       "pagination": {
+         "currentPage": 1,
+         "totalPages": 5,
+         "totalExpenses": 50,
+         "hasNext": true,
+         "hasPrev": false
+       }
+     }
+   }
+
+12. POST /expenses
+   Description: Create new expense
+   Access: Private
+   Request Body:
+   {
+     "amount": 25.50,
+     "description": "Coffee",
+     "category": "64f5b8c9e1234567890abce0",
+     "date": "2024-01-15",
+     "type": "expense",
+     "merchant": "Starbucks",
+     "notes": "Morning coffee"
+   }
+   Response (201):
+   {
+     "success": true,
+     "message": "Expense created successfully",
+     "data": {
+       "_id": "64f5b8c9e1234567890abcdf",
+       "amount": 25.50,
+       "description": "Coffee",
+       "category": "64f5b8c9e1234567890abce0",
+       "date": "2024-01-15T00:00:00.000Z",
+       "type": "expense"
+     }
+   }
+
+13. PUT /expenses/:id
+   Description: Update expense by ID
+   Access: Private
+   Request Body:
+   {
+     "amount": 30.00,
+     "description": "Updated Coffee",
+     "category": "64f5b8c9e1234567890abce0"
+   }
+   Response (200):
+   {
+     "success": true,
+     "message": "Expense updated successfully",
+     "data": {
+       "_id": "64f5b8c9e1234567890abcdf",
+       "amount": 30.00,
+       "description": "Updated Coffee"
+     }
+   }
+
+14. DELETE /expenses/:id
+   Description: Delete expense by ID
+   Access: Private
+   Response (200):
+   {
+     "success": true,
+     "message": "Expense deleted successfully"
+   }
+
+15. GET /expenses/stats/summary
+    Description: Get expense statistics summary
+    Access: Private
+    Query Parameters:
+    - startDate (optional): Start date filter
+    - endDate (optional): End date filter
+    - category (optional): Category filter
+    Response (200):
+    {
+      "success": true,
+      "data": {
+        "totalExpenses": 2250.00,
+        "totalIncome": 3500.00,
+        "netIncome": 1250.00,
+        "transactionCount": 45,
+        "averageExpense": 50.00,
+        "topCategory": "Food & Dining",
+        "topMerchant": "Starbucks"
+      }
+    }
+
+### BUDGET MANAGEMENT
+
+16. GET /budgets
+    Description: Get all budgets for authenticated user
+    Access: Private
+    Query Parameters:
+    - status (optional): active|completed|all (default: all)
+    - month (optional): Month number (1-12)
+    - year (optional): Year (YYYY)
+    Response (200):
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64f5b8c9e1234567890abce1",
+          "category": {
+            "_id": "64f5b8c9e1234567890abce0",
+            "name": "Food & Dining"
+          },
+          "amount": 500.00,
+          "spent": 125.50,
+          "period": "monthly",
+          "month": 1,
+          "year": 2024,
+          "status": "active",
+          "remaining": 374.50,
+          "percentUsed": 25.1
+        }
+      ]
+    }
+
+12. POST /budgets
+    Description: Create new budget
+    Access: Private
+    Request Body:
+    {
+      "category": "64f5b8c9e1234567890abce0",
+      "amount": 500.00,
+      "period": "monthly",
+      "month": 1,
+      "year": 2024,
+      "isRecurring": false
+    }
+    Response (201):
+    {
+      "success": true,
+      "message": "Budget created successfully",
+      "data": {
+        "_id": "64f5b8c9e1234567890abce1",
+        "category": "64f5b8c9e1234567890abce0",
+        "amount": 500.00,
+        "period": "monthly"
+      }
+    }
+
+13. PUT /budgets/:id
+    Description: Update budget by ID
+    Access: Private
+    Request Body:
+    {
+      "amount": 600.00,
+      "isRecurring": true
+    }
+    Response (200):
+    {
+      "success": true,
+      "message": "Budget updated successfully",
+      "data": {
+        "_id": "64f5b8c9e1234567890abce1",
+        "amount": 600.00
+      }
+    }
+
+14. DELETE /budgets/:id
+    Description: Delete budget by ID
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "message": "Budget deleted successfully"
+    }
+
+15. POST /budgets/renew-recurring
+    Description: Renew all recurring budgets for next period
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "message": "Recurring budgets renewed successfully",
+      "data": {
+        "renewed": 5,
+        "skipped": 2
+      }
+    }
+
+16. GET /budgets/:id/performance
+    Description: Get budget performance analysis
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "data": {
+        "budget": {
+          "_id": "64f5b8c9e1234567890abce1",
+          "amount": 500.00,
+          "spent": 450.00,
+          "remaining": 50.00
+        },
+        "dailyAverage": 15.00,
+        "projectedSpend": 465.00,
+        "onTrack": true,
+        "performance": "good"
+      }
+    }
+
+### CATEGORY MANAGEMENT
+
+17. GET /categories
+    Description: Get all categories (system + user custom)
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64f5b8c9e1234567890abce0",
+          "name": "Food & Dining",
+          "icon": "🍽️",
+          "owner": "system",
+          "isActive": true
+        },
+        {
+          "_id": "64f5b8c9e1234567890abce2",
+          "name": "Custom Category",
+          "icon": "📝",
+          "owner": "user",
+          "userId": "64f5b8c9e1234567890abcde"
+        }
+      ]
+    }
+
+18. POST /categories
+    Description: Create custom category
+    Access: Private
+    Request Body:
+    {
+      "name": "Custom Category",
+      "icon": "📝",
+      "color": "#ff6b6b"
+    }
+    Response (201):
+    {
+      "success": true,
+      "message": "Category created successfully",
+      "data": {
+        "_id": "64f5b8c9e1234567890abce2",
+        "name": "Custom Category",
+        "icon": "📝",
+        "owner": "user"
+      }
+    }
+
+19. PUT /categories/:id
+    Description: Update custom category
+    Access: Private
+    Request Body:
+    {
+      "name": "Updated Category",
+      "icon": "📋"
+    }
+    Response (200):
+    {
+      "success": true,
+      "message": "Category updated successfully"
+    }
+
+20. DELETE /categories/:id
+    Description: Delete custom category
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "message": "Category deleted successfully"
+    }
+
+### BANK ACCOUNT MANAGEMENT
+
+18. GET /bank-accounts
+    Description: Get all connected bank accounts
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64f5b8c9e1234567890abce3",
+          "bankName": "Demo Bank",
+          "accountName": "John's Checking",
+          "accountNumber": "****1234",
+          "accountType": "checking",
+          "balance": 2500.00,
+          "connectionStatus": "connected",
+          "lastSyncDate": "2024-01-15T10:30:00.000Z"
+        }
+      ]
+    }
+
+19. POST /bank-accounts
+    Description: Connect new bank account
+    Access: Private
+    Request Body:
+    {
+      "bankName": "Demo Bank",
+      "accountName": "John's Checking",
+      "accountNumber": "1234567890",
+      "accountType": "checking",
+      "bankUserId": "bank_user_123"
+    }
+    Response (201):
+    {
+      "success": true,
+      "message": "Bank account connected successfully",
+      "data": {
+        "_id": "64f5b8c9e1234567890abce3",
+        "bankName": "Demo Bank",
+        "accountName": "John's Checking",
+        "balance": 2500.00
+      }
+    }
+
+20. PUT /bank-accounts/:id
+    Description: Update bank account details
+    Access: Private
+    Request Body:
+    {
+      "bankName": "Updated Bank",
+      "accountName": "John's Updated Account"
+    }
+    Response (200):
+    {
+      "success": true,
+      "message": "Bank account updated successfully"
+    }
+
+21. DELETE /bank-accounts/:id
+    Description: Disconnect bank account
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "message": "Bank account disconnected successfully"
+    }
+
+22. POST /bank-accounts/:id/sync
+    Description: Sync bank account balance
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "message": "Bank account synced successfully",
+      "data": {
+        "_id": "64f5b8c9e1234567890abce3",
+        "balance": 2750.00,
+        "lastSyncDate": "2024-01-15T11:00:00.000Z",
+        "connectionStatus": "connected"
+      }
+    }
+
+23. GET /bank-accounts/available-banks
+    Description: Get available bank accounts for connection
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "data": [
+        {
+          "bankUserId": "bank_user_456",
+          "accountNumber": "9876543210",
+          "accountHolder": "Jane Smith",
+          "bankName": "Demo Bank",
+          "balance": 1500.00
+        }
+      ]
+    }
+
+### IMPORT/EXPORT MANAGEMENT
+
+24. POST /import/expenses/csv
+    Description: Import expenses from CSV file
+    Access: Private
+    Content-Type: multipart/form-data
+    Request Body: CSV file upload
+    Expected CSV format: Date,Type,Description,Category,Amount,Merchant,Notes
+    Response (200):
+    {
+      "success": true,
+      "message": "Imported 15 transactions, 2 failed",
+      "data": {
+        "imported": 15,
+        "failed": 2,
+        "failedTransactions": [
+          {
+            "row": {"Date": "", "Amount": "invalid"},
+            "reason": "Missing required fields"
+          }
+        ]
+      }
+    }
+
+25. POST /import/expenses/bank
+    Description: Import expenses from connected bank account
+    Access: Private
+    Request Body:
+    {
+      "bankUserId": "bank_user_123",
+      "startDate": "2024-01-01",
+      "endDate": "2024-01-31"
+    }
+    Response (200):
+    {
+      "success": true,
+      "message": "Bank import completed",
+      "data": {
+        "imported": 25,
+        "needsCategorization": 5,
+        "failed": 0,
+        "transactionsNeedingCategorization": [
+          {
+            "amount": 45.00,
+            "description": "Unknown Merchant",
+            "suggestedCategory": null,
+            "confidence": "low"
+          }
+        ]
+      }
+    }
+
+26. POST /import/expenses/categorize
+    Description: Categorize pending bank transactions
+    Access: Private
+    Request Body:
+    {
+      "transactions": [
+        {
+          "amount": 45.00,
+          "description": "Unknown Merchant",
+          "category": "64f5b8c9e1234567890abce0",
+          "date": "2024-01-15",
+          "type": "expense"
+        }
+      ]
+    }
+    Response (200):
+    {
+      "success": true,
+      "message": "Categorized 1 transactions",
+      "data": {
+        "imported": 1,
+        "failed": 0
+      }
+    }
+
+27. GET /export/expenses/csv
+    Description: Export expenses to CSV
+    Access: Private
+    Query Parameters:
+    - startDate (optional): Start date filter
+    - endDate (optional): End date filter
+    - category (optional): Category filter
+    Response: CSV file download
+
+28. GET /export/expenses/excel
+    Description: Export expenses to Excel
+    Access: Private
+    Query Parameters:
+    - startDate (optional): Start date filter
+    - endDate (optional): End date filter
+    - category (optional): Category filter
+    Response: Excel file download
+
+29. GET /export/expenses/pdf
+    Description: Export expenses to PDF report
+    Access: Private
+    Query Parameters:
+    - startDate (optional): Start date filter
+    - endDate (optional): End date filter
+    - category (optional): Category filter
+    Response: PDF file download
+
+30. GET /export/budgets
+    Description: Export budgets to CSV
+    Access: Private
+    Query Parameters:
+    - month (optional): Month filter
+    - year (optional): Year filter
+    - status (optional): Budget status filter
+    Response: CSV file download
+
+31. GET /export/budgets/excel
+    Description: Export budgets to Excel
+    Access: Private
+    Query Parameters:
+    - month (optional): Month filter
+    - year (optional): Year filter
+    - status (optional): Budget status filter
+    Response: Excel file download
+
+32. GET /export/goals
+    Description: Export goals to CSV
+    Access: Private
+    Query Parameters:
+    - status (optional): Goal status filter
+    Response: CSV file download
+
+33. GET /export/goals/excel
+    Description: Export goals to Excel
+    Access: Private
+    Query Parameters:
+    - status (optional): Goal status filter
+    Response: Excel file download
+
+### NOTIFICATIONS
+
+44. GET /notifications
+    Description: Get all notifications for user
+    Access: Private
+    Query Parameters:
+    - page (optional): Page number (default: 1)
+    - limit (optional): Items per page (default: 10)
+    - unread (optional): Filter unread only (true/false)
+    Response (200):
+    {
+      "success": true,
+      "data": {
+        "notifications": [
+          {
+            "_id": "64f5b8c9e1234567890abce5",
+            "title": "Budget Alert",
+            "message": "You've exceeded your Food & Dining budget",
+            "type": "budget_exceeded",
+            "isRead": false,
+            "createdAt": "2024-01-15T10:30:00.000Z"
+          }
+        ],
+        "pagination": {
+          "currentPage": 1,
+          "totalPages": 3,
+          "totalNotifications": 25
+        }
+      }
+    }
+
+45. PUT /notifications/read-all
+    Description: Mark all notifications as read
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "message": "All notifications marked as read",
+      "data": {
+        "updatedCount": 12
+      }
+    }
+
+46. PUT /notifications/:id/read
+    Description: Mark specific notification as read
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "message": "Notification marked as read"
+    }
+
+47. DELETE /notifications/:id
+    Description: Delete specific notification
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "message": "Notification deleted successfully"
+    }
+
+### FINANCIAL GOALS
+
+48. GET /goals
+    Description: Get all financial goals
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64f5b8c9e1234567890abce4",
+          "name": "Emergency Fund",
+          "targetAmount": 5000.00,
+          "currentAmount": 1250.00,
+          "startDate": "2024-01-01T00:00:00.000Z",
+          "targetDate": "2024-12-31T00:00:00.000Z",
+          "status": "active",
+          "progress": 25.0
+        }
+      ]
+    }
+
+49. POST /goals
+    Description: Create new financial goal
+    Access: Private
+    Request Body:
+    {
+      "name": "Emergency Fund",
+      "targetAmount": 5000.00,
+      "targetDate": "2024-12-31",
+      "description": "Build emergency fund"
+    }
+    Response (201):
+    {
+      "success": true,
+      "message": "Goal created successfully",
+      "data": {
+        "_id": "64f5b8c9e1234567890abce4",
+        "name": "Emergency Fund",
+        "targetAmount": 5000.00
+      }
+    }
+
+50. PUT /goals/:id
+    Description: Update financial goal
+    Access: Private
+    Request Body:
+    {
+      "currentAmount": 1500.00,
+      "targetAmount": 6000.00
+    }
+    Response (200):
+    {
+      "success": true,
+      "message": "Goal updated successfully"
+    }
+
+51. DELETE /goals/:id
+    Description: Delete financial goal
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "message": "Goal deleted successfully"
+    }
+
+52. POST /goals/:id/contribute
+    Description: Add contribution to financial goal
+    Access: Private
+    Request Body:
+    {
+      "amount": 250.00,
+      "description": "Monthly savings"
+    }
+    Response (200):
+    {
+      "success": true,
+      "message": "Contribution added successfully",
+      "data": {
+        "_id": "64f5b8c9e1234567890abce4",
+        "currentAmount": 1500.00,
+        "progress": 30.0
+      }
+    }
+
+53. GET /goals/:id/progress
+    Description: Get detailed goal progress
+    Access: Private
+    Response (200):
+    {
+      "success": true,
+      "data": {
+        "goal": {
+          "_id": "64f5b8c9e1234567890abce4",
+          "name": "Emergency Fund",
+          "targetAmount": 5000.00,
+          "currentAmount": 1500.00
+        },
+        "progress": 30.0,
+        "remainingAmount": 3500.00,
+        "monthlyRequired": 583.33,
+        "daysRemaining": 180,
+        "onTrack": true
+      }
+    }
+
+### ANALYTICS & REPORTS
+
+36. GET /analytics/overview
+    Description: Get dashboard analytics overview
+    Access: Private
+    Query Parameters:
+    - period (optional): month|year|custom (default: month)
+    - month (optional): Month number (1-12)
+    - year (optional): Year (YYYY)
+    Response (200):
+    {
+      "success": true,
+      "data": {
+        "totalIncome": 3500.00,
+        "totalExpenses": 2250.00,
+        "netIncome": 1250.00,
+        "budgetUtilization": 75.5,
+        "categoryBreakdown": [
+          {
+            "category": "Food & Dining",
+            "amount": 450.00,
+            "percentage": 20.0
+          }
+        ],
+        "monthlyTrend": [
+          {
+            "month": "2024-01",
+            "income": 3500.00,
+            "expenses": 2250.00
+          }
+        ]
+      }
+    }
+
+37. GET /analytics/trends
+    Description: Get spending trends analysis
+    Access: Private
+    Query Parameters:
+    - period (optional): week|month|year (default: month)
+    - category (optional): Category filter
+    Response (200):
+    {
+      "success": true,
+      "data": {
+        "trends": [
+          {
+            "period": "2024-01",
+            "amount": 2250.00,
+            "change": 15.5
+          }
+        ],
+        "topCategories": [
+          {
+            "category": "Food & Dining",
+            "amount": 450.00,
+            "percentage": 20.0
+          }
+        ]
+      }
+    }
+
+38. GET /analytics/categories
+    Description: Get category breakdown analysis
+    Access: Private
+    Query Parameters:
+    - startDate (optional): Start date filter
+    - endDate (optional): End date filter
+    - type (optional): expense|income
+    Response (200):
+    {
+      "success": true,
+      "data": {
+        "categories": [
+          {
+            "category": "Food & Dining",
+            "amount": 450.00,
+            "percentage": 20.0,
+            "transactionCount": 12
+          }
+        ],
+        "totalAmount": 2250.00
+      }
+    }
+
+39. GET /analytics/comparison
+    Description: Get income vs expense comparison
+    Access: Private
+    Query Parameters:
+    - period (optional): month|year (default: month)
+    - year (optional): Year filter
+    Response (200):
+    {
+      "success": true,
+      "data": {
+        "comparison": [
+          {
+            "period": "2024-01",
+            "income": 3500.00,
+            "expenses": 2250.00,
+            "net": 1250.00
+          }
+        ],
+        "averageIncome": 3500.00,
+        "averageExpenses": 2250.00,
+        "savingsRate": 35.7
+      }
+    }
+
+40. GET /analytics/monthly-comparison
+    Description: Get month-to-month comparison
+    Access: Private
+    Query Parameters:
+    - year (optional): Year filter
+    - months (optional): Number of months to compare
+    Response (200):
+    {
+      "success": true,
+      "data": {
+        "comparison": [
+          {
+            "month": "2024-01",
+            "income": 3500.00,
+            "expenses": 2250.00,
+            "savings": 1250.00,
+            "changeFromPrevious": 15.5
+          }
+        ]
+      }
+    }
+
+41. GET /analytics/top-merchants
+    Description: Get top merchants by spending
+    Access: Private
+    Query Parameters:
+    - limit (optional): Number of merchants to return (default: 10)
+    - startDate (optional): Start date filter
+    - endDate (optional): End date filter
+    Response (200):
+    {
+      "success": true,
+      "data": {
+        "merchants": [
+          {
+            "merchant": "Starbucks",
+            "amount": 125.50,
+            "transactionCount": 8,
+            "averageAmount": 15.69
+          }
+        ],
+        "totalMerchants": 25
+      }
+    }
+
+42. GET /analytics/transactions
+    Description: Get transaction analytics
+    Access: Private
+    Query Parameters:
+    - startDate (optional): Start date filter
+    - endDate (optional): End date filter
+    - groupBy (optional): day|week|month
+    Response (200):
+    {
+      "success": true,
+      "data": {
+        "transactions": [
+          {
+            "period": "2024-01-15",
+            "count": 5,
+            "totalAmount": 125.50,
+            "averageAmount": 25.10
+          }
+        ],
+        "summary": {
+          "totalTransactions": 45,
+          "totalAmount": 2250.00,
+          "averageTransaction": 50.00
+        }
+      }
+    }
+
+43. GET /analytics/budget-analysis
+    Description: Get budget vs actual spending analysis
+    Access: Private
+    Query Parameters:
+    - month (optional): Month number (1-12)
+    - year (optional): Year (YYYY)
+    Response (200):
+    {
+      "success": true,
+      "data": {
+        "budgets": [
+          {
+            "category": "Food & Dining",
+            "budgeted": 500.00,
+            "spent": 450.00,
+            "remaining": 50.00,
+            "variance": -10.0
+          }
+        ],
+        "totalBudgeted": 2000.00,
+        "totalSpent": 1750.00,
+        "overallVariance": -12.5
+      }
+    }
+
+================================================================================
+                               ERROR RESPONSES
+================================================================================
+
+400 Bad Request:
+{
+  "success": false,
+  "error": "Validation error message"
+}
+
+401 Unauthorized:
+{
+  "success": false,
+  "error": "Access denied. No token provided"
+}
+
+403 Forbidden:
+{
+  "success": false,
+  "error": "Access denied. Invalid token"
+}
+
+404 Not Found:
+{
+  "success": false,
+  "error": "Resource not found"
+}
+
+409 Conflict:
+{
+  "success": false,
+  "error": "Resource already exists"
+}
+
+500 Internal Server Error:
+{
+  "success": false,
+  "error": "Internal server error"
+}
+
+503 Service Unavailable:
+{
+  "success": false,
+  "error": "Bank server is not available. Please try again later."
+}
+
+================================================================================
+                            BANK SIMULATION SERVER
+================================================================================
+
+Base URL: http://localhost:3001
+Description: Mock bank server for transaction simulation
+
+Endpoints:
+
+1. GET /health
+   Description: Health check
+   Response:
+   {
+     "status": "ok",
+     "message": "Bank Simulation Server is running",
+     "timestamp": "2024-01-15T10:30:00.000Z",
+     "version": "1.0.0"
+   }
+
+2. GET /users
+   Description: Get all bank users
+   Response:
+   [
+     {
+       "id": "bank_user_123",
+       "name": "John Doe",
+       "accountNumber": "1234567890",
+       "bankName": "Demo Bank",
+       "balance": 2500.00
+     }
+   ]
+
+3. GET /users/:id
+   Description: Get specific bank user
+   Response:
+   {
+     "id": "bank_user_123",
+     "name": "John Doe",
+     "accountNumber": "1234567890",
+     "bankName": "Demo Bank",
+     "balance": 2500.00
+   }
+
+4. GET /transactions
+   Description: Get all transactions
+   Query Parameters:
+   - userId: Filter by user ID
+   - _sort: Sort field (default: date)
+   - _order: Sort order (asc|desc)
+   Response:
+   [
+     {
+       "id": "txn_001",
+       "userId": "bank_user_123",
+       "amount": -45.50,
+       "description": "Coffee Shop Purchase",
+       "merchant": "Starbucks",
+       "date": "2024-01-15",
+       "reference": "ref_12345",
+       "bankName": "Demo Bank"
+     }
+   ]
+
+5. POST /users/:id/update-balance
+   Description: Update user balance
+   Request Body:
+   {
+     "balance": 2750.00
+   }
+   Response:
+   {
+     "success": true,
+     "message": "Balance updated successfully",
+     "user": {
+       "id": "bank_user_123",
+       "balance": 2750.00
+     }
+   }
+
+================================================================================
+                              ENVIRONMENT SETUP
+================================================================================
+
+Required Environment Variables:
+
+Backend (.env):
+- PORT=5000
+- NODE_ENV=development
+- MONGODB_URI=mongodb://localhost:27017/wealthwise
+- JWT_SECRET=your-secret-key-change-in-production
+- JWT_EXPIRES_IN=7d
+- BANK_SERVER_URL=http://localhost:3001
+- BANK_SERVER_TIMEOUT=5000
+- CATEGORIZATION_SERVICE_URL=http://localhost:5001/api
+- MAX_FILE_SIZE=5242880
+- UPLOAD_DIR=./uploads
+
+Bank Server (.env):
+- PORT=3001
+- HOST=0.0.0.0
+- DB_FILE=db.json
+- API_PREFIX=
+- CORS_ORIGIN=*
+
+================================================================================
+                              AUTHENTICATION FLOW
+================================================================================
+
+1. Register/Login → Receive JWT token
+2. Include token in Authorization header for all private endpoints
+3. Token expires in 7 days (configurable)
+4. Password reset flow:
+   - POST /auth/forgot-password (email) → OTP generated
+   - POST /auth/reset-password (otp, token, newPassword) → Password updated
+
+================================================================================
+                              BANK INTEGRATION FLOW
+================================================================================
+
+1. GET /bank-accounts/available-banks → List available bank accounts
+2. POST /bank-accounts → Connect bank account using bankUserId
+3. POST /bank-accounts/:id/sync → Sync balance from bank server
+4. POST /import/expenses/bank → Import transactions with auto-categorization
+5. POST /import/expenses/categorize → Manually categorize uncategorized transactions
+
+================================================================================
+                              FILE UPLOAD LIMITS
+================================================================================
+
+- Maximum file size: 5MB
+- Supported formats: CSV for import
+- CSV format: Date,Type,Description,Category,Amount,Merchant,Notes
+- Export formats: CSV, Excel (.xlsx), PDF
+
+================================================================================
+                              PAGINATION PARAMETERS
+================================================================================
+
+Standard pagination for list endpoints:
+- page: Page number (default: 1)
+- limit: Items per page (default: 10, max: 100)
+- Response includes pagination metadata with totalPages, hasNext, hasPrev
+
+================================================================================
+                              VALIDATION RULES
+================================================================================
+
+- Email: Must be valid email format
+- Password: Minimum 6 characters
+- Amount: Must be positive number
+- Date: Must be valid date format (YYYY-MM-DD)
+- Budget period: Cannot create budget for past months
+- Required fields validated on all POST/PUT requests
+
+================================================================================
+                                   NOTES
+================================================================================
+
+- All dates are in ISO 8601 format
+- All monetary amounts are in decimal format (e.g., 25.50)
+- Bank simulation server must be running for bank-related features
+- File uploads are cleaned up automatically after processing
+- Duplicate bank transactions are prevented using bankReference field
+- Auto-categorization uses keyword matching with confidence scoring
+- System categories cannot be modified, only user categories
+- Soft delete is used for bank account disconnection

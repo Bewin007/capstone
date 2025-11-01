@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "mongo-init.js",
-  "private":false,
+  "private": false,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "json-server": "^1.0.0-beta.3"
+  }
 }
